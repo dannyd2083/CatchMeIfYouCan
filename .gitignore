@@ -1,0 +1,31 @@
+# Unity generated files
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# Memory captures
+[Mm]emoryCaptures/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.csproj
+*.sln
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python for ML-Agents
+__pycache__/
+*.pyc
+venv/
+
+# ML-Agents training results
+results/
+models/
+*.onnx
