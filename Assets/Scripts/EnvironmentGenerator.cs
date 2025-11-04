@@ -9,7 +9,7 @@ public class EnvironmentGenerator : MonoBehaviour
     
     [Header("Extra Passages")]
     [Range(0f, 0.3f)]
-    public float extraPassages = 0.2f;
+    public float extraPassages = 0.25f;
     
     [Header("Visual Settings")]
     public Color wallColor = Color.black;
@@ -30,6 +30,7 @@ public class EnvironmentGenerator : MonoBehaviour
     void GenerateMaze()
     {
         maze = new int[width, height];
+        
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
                 maze[x, y] = 1;
@@ -38,51 +39,86 @@ public class EnvironmentGenerator : MonoBehaviour
         int startY = 1;
         maze[startX, startY] = 0;
 
-        List<Vector2Int> walls = new List<Vector2Int>();
-        walls.AddRange(GetNeighborWalls(startX, startY));
+        List<Vector2Int> frontiers = new List<Vector2Int>();
+        AddFrontiers(startX, startY, frontiers);
 
-        while (walls.Count > 0)
+        while (frontiers.Count > 0)
         {
-            int i = Random.Range(0, walls.Count);
-            Vector2Int wall = walls[i];
-            walls.RemoveAt(i);
+            int i = Random.Range(0, frontiers.Count);
+            Vector2Int frontier = frontiers[i];
+            frontiers.RemoveAt(i);
 
-            if (CanCarve(wall.x, wall.y))
+            List<Vector2Int> neighbors = GetCarvedNeighbors(frontier.x, frontier.y);
+            
+            if (neighbors.Count > 0)
             {
-                maze[wall.x, wall.y] = 0;
-                foreach (var w in GetNeighborWalls(wall.x, wall.y))
-                    if (maze[w.x, w.y] == 1)
-                        walls.Add(w);
+                Vector2Int neighbor = neighbors[Random.Range(0, neighbors.Count)];
+                
+                maze[frontier.x, frontier.y] = 0;
+                
+                int wallX = (frontier.x + neighbor.x) / 2;
+                int wallY = (frontier.y + neighbor.y) / 2;
+                maze[wallX, wallY] = 0;
+                
+                AddFrontiers(frontier.x, frontier.y, frontiers);
+            }
+        }
+        
+        for (int x = 0; x < width; x++)
+        {
+            maze[x, 0] = 1;
+            maze[x, height - 1] = 1;
+        }
+        for (int y = 0; y < height; y++)
+        {
+            maze[0, y] = 1;
+            maze[width - 1, y] = 1;
+        }
+    }
+
+    void AddFrontiers(int x, int y, List<Vector2Int> frontiers)
+    {
+        Vector2Int[] dirs = { 
+            new Vector2Int(0, 2),
+            new Vector2Int(0, -2),
+            new Vector2Int(-2, 0),
+            new Vector2Int(2, 0)
+        };
+        
+        foreach (var d in dirs)
+        {
+            int nx = x + d.x;
+            int ny = y + d.y;
+            
+            if (nx > 0 && ny > 0 && nx < width && ny < height && maze[nx, ny] == 1)
+            {
+                if (!frontiers.Contains(new Vector2Int(nx, ny)))
+                {
+                    frontiers.Add(new Vector2Int(nx, ny));
+                }
             }
         }
     }
 
-    bool CanCarve(int x, int y)
-    {
-        int passages = 0;
-        Vector2Int[] dirs = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
-        foreach (var d in dirs)
-        {
-            int nx = x + d.x;
-            int ny = y + d.y;
-            if (nx < 0 || ny < 0 || nx >= width || ny >= height)
-                continue;
-            if (maze[nx, ny] == 0)
-                passages++;
-        }
-        return passages == 1;
-    }
-
-    List<Vector2Int> GetNeighborWalls(int x, int y)
+    List<Vector2Int> GetCarvedNeighbors(int x, int y)
     {
         List<Vector2Int> list = new List<Vector2Int>();
-        Vector2Int[] dirs = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+        Vector2Int[] dirs = { 
+            new Vector2Int(0, 2),
+            new Vector2Int(0, -2),
+            new Vector2Int(-2, 0),
+            new Vector2Int(2, 0)
+        };
+        
         foreach (var d in dirs)
         {
             int nx = x + d.x;
             int ny = y + d.y;
-            if (nx > 0 && ny > 0 && nx < width - 1 && ny < height - 1)
+            
+            if (nx > 0 && ny > 0 && nx < width && ny < height && maze[nx, ny] == 0)
+            {
                 list.Add(new Vector2Int(nx, ny));
+            }
         }
         return list;
     }
