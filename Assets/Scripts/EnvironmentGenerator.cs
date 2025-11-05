@@ -182,11 +182,11 @@ public class EnvironmentGenerator : MonoBehaviour
             {
                 spriteRenderer.sortingOrder = 1;
             }
-            
+
             TargetController targetController = target.GetComponent<TargetController>();
             if (targetController != null)
             {
-                targetController.enabled = false;
+                targetController.enabled = true;
             }
         }
     }
@@ -206,13 +206,13 @@ public class EnvironmentGenerator : MonoBehaviour
         rb.interpolation = RigidbodyInterpolation2D.Interpolate;
         rb.drag = 0;
         rb.angularDrag = 0;
-        
-        ChaserController controller = chaser.GetComponent<ChaserController>();
-        if (controller == null)
+
+        ChaserAgent agent = chaser.GetComponent<ChaserAgent>();
+        if (agent == null)
         {
-            controller = chaser.AddComponent<ChaserController>();
+            agent = chaser.AddComponent<ChaserAgent>();
         }
-        
+
         BoxCollider2D collider = chaser.GetComponent<BoxCollider2D>();
         if (collider == null)
         {

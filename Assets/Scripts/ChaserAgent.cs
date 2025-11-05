@@ -18,6 +18,10 @@ public class ChaserAgent : Agent
     [Header("Training Settings")]
     [SerializeField] private float maxStepsPerEpisode = 5000f;  // Max steps per episode
 
+    // ==================== Environment Info ====================
+    [Header("Environment Info")]
+    [SerializeField] private float arenaSize = 21f;
+
     // ==================== Lifecycle Methods ====================
 
     /// Initialize - Called once when the game starts
@@ -52,17 +56,17 @@ public class ChaserAgent : Agent
         Debug.Log("--- New Episode Started ---");
 
         // Reset Chaser position and velocity
-        transform.localPosition = new Vector3(-2f, 0f, 0f);
+        transform.position = new Vector3(1f, 1f, 0f);
         rb.velocity = Vector2.zero;
         rb.angularVelocity = 0f;
 
         // Reset Target position (simple random)
-        if (targetTransform != null)
-        {
-            float randomX = Random.Range(-3f, 3f);
-            float randomY = Random.Range(-3f, 3f);
-            targetTransform.localPosition = new Vector3(randomX, randomY, 0f);
-        }
+        //if (targetTransform != null)
+        //{
+        //    float randomX = Random.Range(-3f, 3f);
+        //    float randomY = Random.Range(-3f, 3f);
+        //    targetTransform.localPosition = new Vector3(randomX, randomY, 0f);
+        //}
     }
 
 
@@ -72,8 +76,8 @@ public class ChaserAgent : Agent
     {
         // Observation 1-2: Relative position (Target relative to Chaser)
         Vector2 relativePosition = targetTransform.localPosition - transform.localPosition;
-        sensor.AddObservation(relativePosition.x / 10f);  // Normalize to -1~1
-        sensor.AddObservation(relativePosition.y / 10f);
+        sensor.AddObservation(relativePosition.x / arenaSize);
+        sensor.AddObservation(relativePosition.y / arenaSize);
 
         // Observation 3-4: Chaser's velocity
         sensor.AddObservation(rb.velocity.x / moveSpeed);
@@ -94,8 +98,6 @@ public class ChaserAgent : Agent
         // Execute movement
         Vector2 movement = new Vector2(moveX, moveY) * moveSpeed;
         rb.velocity = movement;
-
-        Debug.Log($"Action: X={moveX:F2}, Y={moveY:F2}");
 
         // Check if caught the Target
         float distanceToTarget = Vector2.Distance(transform.localPosition, targetTransform.localPosition);
@@ -128,7 +130,6 @@ public class ChaserAgent : Agent
 
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
-        Debug.Log($"Heuristic called: H={horizontal:F2}, V={vertical:F2}");
 
         continuousActions[0] = horizontal;  // A/D  
         continuousActions[1] = vertical;    // W/S 

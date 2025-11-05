@@ -16,12 +16,12 @@ public class TargetController : MonoBehaviour
         ChooseRandomDirection();
     }
 
-    void Update()
+    void FixedUpdate()
     {
         rb.velocity = moveDirection * moveSpeed;
-        timer += Time.deltaTime;
+        timer += Time.fixedDeltaTime;
 
-        if(timer >= changeDirectionTime)
+        if (timer >= changeDirectionTime)
         {
             ChooseRandomDirection();
             timer = 0f;
@@ -32,8 +32,8 @@ public class TargetController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Wall"))
         {
-            Vector2 normal = collision.contacts[0].normal;
-            moveDirection = Vector2.Reflect(moveDirection, normal);
+            ChooseRandomDirection();
+            timer = 0f;
         }
     }
 
