@@ -26,6 +26,27 @@ public class EnvironmentGenerator : MonoBehaviour
         RenderMaze();
         SetupPlayerPositions();
     }
+    
+    public int[,] GetMaze()
+    {
+        return maze;
+    }
+    
+    public void RegenerateMaze()
+    {
+        if (mapParent != null)
+        {
+            foreach (Transform child in mapParent)
+            {
+                Destroy(child.gameObject);
+            }
+        }
+        
+        GenerateMaze();
+        AddExtraPassages();
+        EnsureCornerSpaces();
+        RenderMaze();
+    }
 
     void GenerateMaze()
     {
@@ -176,41 +197,22 @@ public class EnvironmentGenerator : MonoBehaviour
         if (target != null)
         {
             target.transform.position = new Vector3(width - 2, height - 2, 0);
-            
-            SpriteRenderer spriteRenderer = target.GetComponent<SpriteRenderer>();
-            if (spriteRenderer != null)
-            {
-                spriteRenderer.sortingOrder = 1;
-            }
-            
-            TargetController targetController = target.GetComponent<TargetController>();
-            if (targetController != null)
-            {
-                targetController.enabled = false;
-            }
+            SetupTarget(target);
         }
     }
 
     void SetupChaser(GameObject chaser)
     {
-        Rigidbody2D rb = chaser.GetComponent<Rigidbody2D>();
-        if (rb == null)
+        ChaserAI aiController = chaser.GetComponent<ChaserAI>();
+        if (aiController == null)
         {
-            rb = chaser.AddComponent<Rigidbody2D>();
+            aiController = chaser.AddComponent<ChaserAI>();
         }
         
-        rb.bodyType = RigidbodyType2D.Dynamic;
-        rb.gravityScale = 0;
-        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
-        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-        rb.interpolation = RigidbodyInterpolation2D.Interpolate;
-        rb.drag = 0;
-        rb.angularDrag = 0;
-        
-        ChaserController controller = chaser.GetComponent<ChaserController>();
-        if (controller == null)
+        Rigidbody2D rb = chaser.GetComponent<Rigidbody2D>();
+        if (rb != null)
         {
-            controller = chaser.AddComponent<ChaserController>();
+            DestroyImmediate(rb);
         }
         
         BoxCollider2D collider = chaser.GetComponent<BoxCollider2D>();
@@ -221,6 +223,34 @@ public class EnvironmentGenerator : MonoBehaviour
         collider.size = Vector2.one * 0.8f;
         
         SpriteRenderer spriteRenderer = chaser.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.sortingOrder = 1;
+        }
+    }
+    
+    void SetupTarget(GameObject target)
+    {
+        TargetAgent agent = target.GetComponent<TargetAgent>();
+        if (agent == null)
+        {
+            agent = target.AddComponent<TargetAgent>();
+        }
+        
+        Rigidbody2D rb = target.GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            DestroyImmediate(rb);
+        }
+        
+        BoxCollider2D collider = target.GetComponent<BoxCollider2D>();
+        if (collider == null)
+        {
+            collider = target.AddComponent<BoxCollider2D>();
+        }
+        collider.size = Vector2.one * 0.8f;
+        
+        SpriteRenderer spriteRenderer = target.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
             spriteRenderer.sortingOrder = 1;
@@ -245,6 +275,8 @@ public class EnvironmentGenerator : MonoBehaviour
                 {
                     GameObject wall = CreateSprite("Wall", pos, wallColor);
                     wall.tag = "Wall";
+                    wall.layer = LayerMask.NameToLayer("WallLayer");
+                    
                     BoxCollider2D collider = wall.AddComponent<BoxCollider2D>();
                     collider.size = Vector2.one;
                     
