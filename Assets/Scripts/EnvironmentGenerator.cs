@@ -6,32 +6,43 @@ public class EnvironmentGenerator : MonoBehaviour
     [Header("Maze Settings")]
     public int width = 21;
     public int height = 21;
-    
+
     [Header("Extra Passages")]
-    [Range(0f, 0.3f)]
-    public float extraPassages = 0.25f;
-    
+    [Range(0f, 1.0f)]
+    public float extraPassages = 0.2f;
+
     [Header("Visual Settings")]
     public Color wallColor = Color.black;
     public Color floorColor = new Color(0.85f, 0.85f, 0.85f);
-    
+
+    [Header("Random Seed (Fixed Maze)")]
+    public int mazeSeed = 12345;
+
+    [Header("Random Spawn Settings")]
+    public int minSpawnDistance = 15;
+
     private Transform mapParent;
     private int[,] maze;
+    private static int resetCounter = 0;
 
     void Start()
     {
         GenerateMaze();
         AddExtraPassages();
         EnsureCornerSpaces();
+        
+        resetCounter++;
+        Random.InitState((int)(System.DateTime.Now.Ticks + resetCounter * 1000));
+        
         RenderMaze();
         SetupPlayerPositions();
     }
-    
+
     public int[,] GetMaze()
     {
         return maze;
     }
-    
+
     public void RegenerateMaze()
     {
         if (mapParent != null)
@@ -41,17 +52,31 @@ public class EnvironmentGenerator : MonoBehaviour
                 Destroy(child.gameObject);
             }
         }
-        
+
         GenerateMaze();
         AddExtraPassages();
         EnsureCornerSpaces();
+        
+        resetCounter++;
+        Random.InitState((int)(System.DateTime.Now.Ticks + resetCounter * 1000));
+        
         RenderMaze();
+        SetupPlayerPositions();
+    }
+
+    public void ResetPlayerPositions()
+    {
+        resetCounter++;
+        Random.InitState((int)(System.DateTime.Now.Ticks + resetCounter * 1000));
+        
+        SetupPlayerPositions();
     }
 
     void GenerateMaze()
     {
+        Random.InitState(mazeSeed);
         maze = new int[width, height];
-        
+
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
                 maze[x, y] = 1;
@@ -70,21 +95,21 @@ public class EnvironmentGenerator : MonoBehaviour
             frontiers.RemoveAt(i);
 
             List<Vector2Int> neighbors = GetCarvedNeighbors(frontier.x, frontier.y);
-            
+
             if (neighbors.Count > 0)
             {
                 Vector2Int neighbor = neighbors[Random.Range(0, neighbors.Count)];
-                
+
                 maze[frontier.x, frontier.y] = 0;
-                
+
                 int wallX = (frontier.x + neighbor.x) / 2;
                 int wallY = (frontier.y + neighbor.y) / 2;
                 maze[wallX, wallY] = 0;
-                
+
                 AddFrontiers(frontier.x, frontier.y, frontiers);
             }
         }
-        
+
         for (int x = 0; x < width; x++)
         {
             maze[x, 0] = 1;
@@ -99,18 +124,18 @@ public class EnvironmentGenerator : MonoBehaviour
 
     void AddFrontiers(int x, int y, List<Vector2Int> frontiers)
     {
-        Vector2Int[] dirs = { 
+        Vector2Int[] dirs = {
             new Vector2Int(0, 2),
             new Vector2Int(0, -2),
             new Vector2Int(-2, 0),
             new Vector2Int(2, 0)
         };
-        
+
         foreach (var d in dirs)
         {
             int nx = x + d.x;
             int ny = y + d.y;
-            
+
             if (nx > 0 && ny > 0 && nx < width && ny < height && maze[nx, ny] == 1)
             {
                 if (!frontiers.Contains(new Vector2Int(nx, ny)))
@@ -124,18 +149,18 @@ public class EnvironmentGenerator : MonoBehaviour
     List<Vector2Int> GetCarvedNeighbors(int x, int y)
     {
         List<Vector2Int> list = new List<Vector2Int>();
-        Vector2Int[] dirs = { 
+        Vector2Int[] dirs = {
             new Vector2Int(0, 2),
             new Vector2Int(0, -2),
             new Vector2Int(-2, 0),
             new Vector2Int(2, 0)
         };
-        
+
         foreach (var d in dirs)
         {
             int nx = x + d.x;
             int ny = y + d.y;
-            
+
             if (nx > 0 && ny > 0 && nx < width && ny < height && maze[nx, ny] == 0)
             {
                 list.Add(new Vector2Int(nx, ny));
@@ -147,7 +172,7 @@ public class EnvironmentGenerator : MonoBehaviour
     void AddExtraPassages()
     {
         List<Vector2Int> breakableWalls = new List<Vector2Int>();
-        
+
         for (int x = 1; x < width - 1; x++)
         {
             for (int y = 1; y < height - 1; y++)
@@ -160,7 +185,7 @@ public class EnvironmentGenerator : MonoBehaviour
         }
 
         int wallsToBreak = Mathf.RoundToInt(breakableWalls.Count * extraPassages);
-        
+
         for (int i = 0; i < wallsToBreak && breakableWalls.Count > 0; i++)
         {
             int randomIndex = Random.Range(0, breakableWalls.Count);
@@ -188,18 +213,84 @@ public class EnvironmentGenerator : MonoBehaviour
         GameObject chaser = GameObject.Find("Chaser");
         GameObject target = GameObject.Find("Target");
 
-        if (chaser != null)
-        {
-            chaser.transform.position = new Vector3(1, 1, 0);
-            SetupChaser(chaser);
-        }
+        GetRandomSpawnPositions(out Vector2Int targetPos, out Vector2Int chaserPos);
+        
+        Vector3 targetStartPos = new Vector3(targetPos.x, targetPos.y, 0);
+        Vector3 chaserStartPos = new Vector3(chaserPos.x, chaserPos.y, 0);
 
         if (target != null)
         {
-            target.transform.position = new Vector3(width - 2, height - 2, 0);
+            target.transform.position = targetStartPos;
             SetupTarget(target);
         }
+
+        if (chaser != null)
+        {
+            chaser.transform.position = chaserStartPos;
+            SetupChaser(chaser);
+            
+            ChaserAI chaserAI = chaser.GetComponent<ChaserAI>();
+            if (chaserAI != null)
+            {
+                chaserAI.ResetAI(chaserStartPos);
+            }
+        }
     }
+
+    void GetRandomSpawnPositions(out Vector2Int targetPos, out Vector2Int chaserPos)
+    {
+        List<Vector2Int> allPositions = new List<Vector2Int>();
+
+        for (int x = 1; x < width - 1; x++)
+        {
+            for (int y = 1; y < height - 1; y++)
+            {
+                if (maze[x, y] == 0)
+                {
+                    allPositions.Add(new Vector2Int(x, y));
+                }
+            }
+        }
+
+        if (allPositions.Count < 2)
+        {
+            targetPos = new Vector2Int(1, 1);
+            chaserPos = new Vector2Int(width - 2, height - 2);
+            return;
+        }
+
+        targetPos = allPositions[Random.Range(0, allPositions.Count)];
+
+        List<Vector2Int> validChaserPositions = new List<Vector2Int>();
+        foreach (var pos in allPositions)
+        {
+            int dist = Mathf.Abs(pos.x - targetPos.x) + Mathf.Abs(pos.y - targetPos.y);
+            if (dist >= minSpawnDistance)
+            {
+                validChaserPositions.Add(pos);
+            }
+        }
+
+        if (validChaserPositions.Count == 0)
+        {
+            float maxDist = 0;
+            chaserPos = allPositions[0];
+            foreach (var pos in allPositions)
+            {
+                float dist = Vector2.Distance(new Vector2(pos.x, pos.y), new Vector2(targetPos.x, targetPos.y));
+                if (dist > maxDist)
+                {
+                    maxDist = dist;
+                    chaserPos = pos;
+                }
+            }
+        }
+        else
+        {
+            chaserPos = validChaserPositions[Random.Range(0, validChaserPositions.Count)];
+        }
+    }
+
 
     void SetupChaser(GameObject chaser)
     {
@@ -208,27 +299,27 @@ public class EnvironmentGenerator : MonoBehaviour
         {
             aiController = chaser.AddComponent<ChaserAI>();
         }
-        
+
         Rigidbody2D rb = chaser.GetComponent<Rigidbody2D>();
         if (rb != null)
         {
             DestroyImmediate(rb);
         }
-        
+
         BoxCollider2D collider = chaser.GetComponent<BoxCollider2D>();
         if (collider == null)
         {
             collider = chaser.AddComponent<BoxCollider2D>();
         }
         collider.size = Vector2.one * 0.8f;
-        
+
         SpriteRenderer spriteRenderer = chaser.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
             spriteRenderer.sortingOrder = 1;
         }
     }
-    
+
     void SetupTarget(GameObject target)
     {
         TargetAgent agent = target.GetComponent<TargetAgent>();
@@ -236,20 +327,20 @@ public class EnvironmentGenerator : MonoBehaviour
         {
             agent = target.AddComponent<TargetAgent>();
         }
-        
+
         Rigidbody2D rb = target.GetComponent<Rigidbody2D>();
         if (rb != null)
         {
             DestroyImmediate(rb);
         }
-        
+
         BoxCollider2D collider = target.GetComponent<BoxCollider2D>();
         if (collider == null)
         {
             collider = target.AddComponent<BoxCollider2D>();
         }
         collider.size = Vector2.one * 0.8f;
-        
+
         SpriteRenderer spriteRenderer = target.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
@@ -270,22 +361,22 @@ public class EnvironmentGenerator : MonoBehaviour
             for (int y = 0; y < height; y++)
             {
                 Vector3 pos = new Vector3(x, y, 0);
-                
+
                 if (maze[x, y] == 1)
                 {
                     GameObject wall = CreateSprite("Wall", pos, wallColor);
                     wall.tag = "Wall";
                     wall.layer = LayerMask.NameToLayer("WallLayer");
-                    
+
                     BoxCollider2D collider = wall.AddComponent<BoxCollider2D>();
                     collider.size = Vector2.one;
-                    
+
                     SpriteRenderer wallRenderer = wall.GetComponent<SpriteRenderer>();
                     if (wallRenderer != null)
                     {
                         wallRenderer.sortingOrder = 2;
                     }
-                    
+
                     wall.transform.SetParent(mapParent);
                 }
                 else
@@ -295,7 +386,7 @@ public class EnvironmentGenerator : MonoBehaviour
                 }
             }
         }
-        
+
         AdjustCamera();
     }
 
@@ -305,7 +396,7 @@ public class EnvironmentGenerator : MonoBehaviour
         if (mainCam != null)
         {
             mainCam.transform.position = new Vector3(width / 2f, height / 2f, -10);
-            
+
             float aspectRatio = (float)Screen.width / Screen.height;
             float verticalSize = height / 2f + 1;
             float horizontalSize = width / (2f * aspectRatio) + 1;

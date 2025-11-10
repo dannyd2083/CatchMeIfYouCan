@@ -6,16 +6,17 @@ public class TrainingEnvironment : MonoBehaviour
     [Header("Training Settings")]
     [SerializeField] private float maxEpisodeTime = 30f;
     [SerializeField] private float timeRewardInterval = 10f;
-    
+    [SerializeField] private float timeRewardDecay = 0.05f;
+
     [Header("References")]
     [SerializeField] private TargetAgent targetAgent;
     [SerializeField] private ChaserAI chaserAI;
     [SerializeField] private EnvironmentGenerator environmentGenerator;
-    
+
     private float episodeTimer = 0f;
     private int timeRewardMultiplier = 1;
     private bool episodeEnded = false;
-    
+
     void Start()
     {
         if (targetAgent == null)
@@ -25,12 +26,10 @@ public class TrainingEnvironment : MonoBehaviour
             {
                 targetAgent = target.GetComponent<TargetAgent>();
                 if (targetAgent == null)
-                {
                     targetAgent = target.AddComponent<TargetAgent>();
-                }
             }
         }
-        
+
         if (chaserAI == null)
         {
             GameObject chaser = GameObject.Find("Chaser");
@@ -38,143 +37,123 @@ public class TrainingEnvironment : MonoBehaviour
             {
                 chaserAI = chaser.GetComponent<ChaserAI>();
                 if (chaserAI == null)
-                {
                     chaserAI = chaser.AddComponent<ChaserAI>();
-                }
             }
         }
-        
+
         if (environmentGenerator == null)
         {
             environmentGenerator = FindObjectOfType<EnvironmentGenerator>();
         }
-        
-        ResetEnvironment();
     }
-    
+
     void FixedUpdate()
     {
         if (episodeEnded) return;
-        
+
         episodeTimer += Time.fixedDeltaTime;
-        
+
         float timeThreshold = timeRewardInterval * timeRewardMultiplier;
         if (episodeTimer >= timeThreshold)
         {
-            float reward = 0.5f * timeRewardMultiplier;
+            float reward = 0.8f * Mathf.Exp(-timeRewardDecay * timeRewardMultiplier);
+
             if (targetAgent != null)
-            {
                 targetAgent.OnTimeReward(reward);
-            }
-            
+
             timeRewardMultiplier++;
-            
-            Debug.Log($"Time reward! Survived {episodeTimer:F1} seconds, gained {reward} reward");
+
+            if (Application.isEditor)
+                Debug.Log($"Time reward! Survived {episodeTimer:F1}s, gained {reward:F3}");
         }
-        
+
         if (episodeTimer >= maxEpisodeTime)
         {
-            OnEpisodeSuccess();
+            OnEpisodeTimeout();
         }
     }
-    
+
     public void OnTargetCaught()
     {
         if (episodeEnded) return;
-        
+
         episodeEnded = true;
-        
         Debug.Log($"Target caught! Survival time: {episodeTimer:F1} seconds");
-        
+
         if (targetAgent != null)
         {
             targetAgent.OnCaught();
         }
-        
+
         Invoke(nameof(ResetEnvironment), 0.5f);
     }
-    
-    void OnEpisodeSuccess()
+
+    void OnEpisodeTimeout()
     {
         if (episodeEnded) return;
-        
+
         episodeEnded = true;
-        
-        Debug.Log($"Success! Target survived {maxEpisodeTime} seconds!");
-        
+        Debug.Log($"Timeout! Target survived full {maxEpisodeTime} seconds!");
+
         if (targetAgent != null)
         {
-            targetAgent.AddReward(2.0f);
-            targetAgent.EndEpisode();
+            targetAgent.AddReward(1.0f);
+            targetAgent.EndByTimeout();
         }
-        
+
         Invoke(nameof(ResetEnvironment), 0.5f);
     }
-    
+
     public void ResetEnvironment()
     {
         episodeTimer = 0f;
         timeRewardMultiplier = 1;
         episodeEnded = false;
-        
+
         if (environmentGenerator != null)
         {
-            environmentGenerator.RegenerateMaze();
-            Debug.Log("New maze generated");
-        }
-        
-        if (environmentGenerator != null)
-        {
-            Vector3 targetStartPos = new Vector3(environmentGenerator.width - 2, environmentGenerator.height - 2, 0);
-            Vector3 chaserStartPos = new Vector3(1, 1, 0);
-            
+            environmentGenerator.ResetPlayerPositions();
+
             if (targetAgent != null)
-            {
-                targetAgent.transform.position = targetStartPos;
-            }
-            
+                targetAgent.SyncAfterReset();
+
             if (chaserAI != null)
             {
-                chaserAI.ResetAI(chaserStartPos);
+                chaserAI.ResetAI(chaserAI.transform.position);
             }
         }
         else
         {
             if (targetAgent != null)
-            {
                 targetAgent.transform.position = new Vector3(19, 19, 0);
-            }
-            
+
             if (chaserAI != null)
-            {
                 chaserAI.ResetAI(new Vector3(1, 1, 0));
-            }
         }
-        
-        Debug.Log("Environment reset");
     }
-    
+
     void OnGUI()
     {
         GUI.color = Color.white;
         GUIStyle style = new GUIStyle();
         style.fontSize = 20;
         style.normal.textColor = Color.white;
-        
+
         float y = 10;
+
         GUI.Label(new Rect(10, y, 300, 30), $"Survival Time: {episodeTimer:F1}s", style);
         y += 30;
-        
+
         float remaining = maxEpisodeTime - episodeTimer;
         GUI.Label(new Rect(10, y, 300, 30), $"Remaining: {remaining:F1}s", style);
         y += 30;
-        
+
         float nextReward = (timeRewardInterval * timeRewardMultiplier) - episodeTimer;
         if (nextReward > 0)
         {
             GUI.Label(new Rect(10, y, 300, 30), $"Next Reward: {nextReward:F1}s", style);
         }
-        
+
         if (targetAgent != null && chaserAI != null)
         {
             float distance = Vector2.Distance(targetAgent.transform.position, chaserAI.transform.position);
@@ -183,4 +162,3 @@ public class TrainingEnvironment : MonoBehaviour
         }
     }
 }
-

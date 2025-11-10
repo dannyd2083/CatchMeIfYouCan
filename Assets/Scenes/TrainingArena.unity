@@ -229,6 +229,8 @@ GameObject:
   - component: {fileID: 822426528}
   - component: {fileID: 822426527}
   - component: {fileID: 822426529}
+  - component: {fileID: 822426530}
+  - component: {fileID: 822426531}
   m_Layer: 0
   m_Name: Target
   m_TagString: Untagged
@@ -391,7 +393,7 @@ MonoBehaviour:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
   MaxStep: 0
-  moveSpeed: 5
+  moveSpeed: 4
 --- !u!114 &822426528
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -405,7 +407,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 12
+    VectorObservationSize: 55
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
@@ -438,6 +440,50 @@ MonoBehaviour:
   DecisionPeriod: 5
   DecisionStep: 0
   TakeActionsBetweenDecisions: 1
+--- !u!114 &822426530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 822426521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f67c7e722ba14acd9153bb4488bff6e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SensorName: RayPerceptionSensor
+  m_DetectableTags:
+  - Wall
+  - Chaser
+  m_RaysPerDirection: 8
+  m_MaxRayDegrees: 100
+  m_SphereCastRadius: 0.5
+  m_RayLength: 6
+  m_RayLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967241
+  m_ObservationStacks: 1
+  m_AlternatingRayOrder: 1
+  m_UseBatchedRaycasts: 0
+  rayHitColor: {r: 1, g: 0, b: 0, a: 1}
+  rayMissColor: {r: 1, g: 1, b: 1, a: 1}
+--- !u!114 &822426531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 822426521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88b6042bc9a5d4aa58d931eae49442e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentParameters:
+    maxStep: 0
+  hasUpgradedFromAgentParameters: 1
+  MaxStep: 0
 --- !u!1 &1231551652
 GameObject:
   m_ObjectHideFlags: 0
@@ -469,6 +515,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxEpisodeTime: 30
   timeRewardInterval: 10
+  timeRewardDecay: 0.05
   targetAgent: {fileID: 822426527}
   chaserAI: {fileID: 1878556255}
   environmentGenerator: {fileID: 1360779477}
@@ -533,9 +580,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 21
   height: 21
-  extraPassages: 0.25
+  extraPassages: 0.2
   wallColor: {r: 0, g: 0, b: 0, a: 1}
   floorColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
+  mazeSeed: 12345
+  minSpawnDistance: 15
 --- !u!1 &1878556250
 GameObject:
   m_ObjectHideFlags: 0
@@ -551,7 +600,7 @@ GameObject:
   - component: {fileID: 1878556255}
   m_Layer: 0
   m_Name: Chaser
-  m_TagString: Untagged
+  m_TagString: Chaser
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -707,9 +756,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4669bfda7b7d9c5498885f5537993996, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 3.5
+  moveSpeed: 3
+  pathUpdateInterval: 2
   catchRadius: 0.5
-  pathUpdateInterval: 0.5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
