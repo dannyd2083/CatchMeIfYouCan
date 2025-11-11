@@ -15,8 +15,16 @@ public class EnvironmentGenerator : MonoBehaviour
     public Color wallColor = Color.black;
     public Color floorColor = new Color(0.85f, 0.85f, 0.85f);
 
-    [Header("Random Seed (Fixed Maze)")]
-    public int mazeSeed = 12345;
+    [Header("Multi-Map Training")]
+    public int currentMapIndex = 0;
+    private static readonly int[] MAP_SEEDS = new int[] {
+        12345, 23456, 34567, 45678, 56789,
+        67890, 78901, 89012, 90123, 11234,
+        22345, 33456, 44567, 55678, 66789,
+        77890, 88901, 99012, 10123, 21234,
+        99999, 88888, 77777, 66666, 55555,
+        44444, 33333, 22222, 11111, 10001
+    };
 
     [Header("Random Spawn Settings")]
     public int minSpawnDistance = 15;
@@ -41,6 +49,12 @@ public class EnvironmentGenerator : MonoBehaviour
     public int[,] GetMaze()
     {
         return maze;
+    }
+
+    public void SwitchToMap(int mapIndex)
+    {
+        currentMapIndex = mapIndex;
+        RegenerateMaze();
     }
 
     public void RegenerateMaze()
@@ -74,7 +88,8 @@ public class EnvironmentGenerator : MonoBehaviour
 
     void GenerateMaze()
     {
-        Random.InitState(mazeSeed);
+        int seed = MAP_SEEDS[currentMapIndex % MAP_SEEDS.Length];
+        Random.InitState(seed);
         maze = new int[width, height];
 
         for (int x = 0; x < width; x++)

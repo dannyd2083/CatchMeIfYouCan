@@ -516,9 +516,11 @@ MonoBehaviour:
   maxEpisodeTime: 30
   timeRewardInterval: 10
   timeRewardDecay: 0.05
-  targetAgent: {fileID: 822426527}
-  chaserAI: {fileID: 1878556255}
-  environmentGenerator: {fileID: 1360779477}
+  stepsPerMap: 2000000
+  stepsBeforeSwitch: 100000
+  targetAgent: {fileID: 0}
+  chaserAI: {fileID: 0}
+  environmentGenerator: {fileID: 0}
 --- !u!4 &1231551654
 Transform:
   m_ObjectHideFlags: 0
@@ -583,7 +585,7 @@ MonoBehaviour:
   extraPassages: 0.2
   wallColor: {r: 0, g: 0, b: 0, a: 1}
   floorColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
-  mazeSeed: 12345
+  currentMapIndex: 0
   minSpawnDistance: 15
 --- !u!1 &1878556250
 GameObject:

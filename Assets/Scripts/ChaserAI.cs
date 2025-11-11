@@ -232,6 +232,13 @@ public class ChaserAI : MonoBehaviour
         float distance = Vector2.Distance(transform.position, targetTransform.position);
         if (distance <= catchRadius)
         {
+            TestEnvironment testEnv = FindObjectOfType<TestEnvironment>();
+            if (testEnv != null)
+            {
+                testEnv.OnTargetCaught();
+                return;
+            }
+            
             TrainingEnvironment env = FindObjectOfType<TrainingEnvironment>();
             if (env != null)
                 env.OnTargetCaught();

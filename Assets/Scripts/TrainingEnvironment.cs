@@ -8,6 +8,14 @@ public class TrainingEnvironment : MonoBehaviour
     [SerializeField] private float timeRewardInterval = 10f;
     [SerializeField] private float timeRewardDecay = 0.05f;
 
+    [Header("Multi-Map Training")]
+    [SerializeField] private int stepsPerMap = 2000000;
+    [SerializeField] private int stepsBeforeSwitch = 100000;
+    private const int TOTAL_MAPS = 20;
+    private int[] mapSteps = new int[TOTAL_MAPS];
+    private int currentStepCount = 0;
+    private bool shouldSwitchMap = false;
+
     [Header("References")]
     [SerializeField] private TargetAgent targetAgent;
     [SerializeField] private ChaserAI chaserAI;
@@ -45,11 +53,19 @@ public class TrainingEnvironment : MonoBehaviour
         {
             environmentGenerator = FindObjectOfType<EnvironmentGenerator>();
         }
+
+        for (int i = 0; i < TOTAL_MAPS; i++)
+        {
+            mapSteps[i] = 0;
+        }
     }
 
     void FixedUpdate()
     {
         if (episodeEnded) return;
+
+        currentStepCount++;
+        CheckMapSwitch();
 
         episodeTimer += Time.fixedDeltaTime;
 
@@ -70,6 +86,34 @@ public class TrainingEnvironment : MonoBehaviour
         if (episodeTimer >= maxEpisodeTime)
         {
             OnEpisodeTimeout();
+        }
+    }
+
+    void CheckMapSwitch()
+    {
+        if (environmentGenerator == null) return;
+
+        int currentMapIndex = environmentGenerator.currentMapIndex;
+        mapSteps[currentMapIndex]++;
+
+        if (currentStepCount >= stepsBeforeSwitch)
+        {
+            shouldSwitchMap = true;
+            currentStepCount = 0;
+        }
+
+        bool allCompleted = true;
+        for (int i = 0; i < TOTAL_MAPS; i++)
+        {
+            if (mapSteps[i] < stepsPerMap)
+            {
+                allCompleted = false;
+                break;
+            }
+        }
+        if (allCompleted)
+        {
+            Debug.Log("All maps completed training!");
         }
     }
 
@@ -110,19 +154,28 @@ public class TrainingEnvironment : MonoBehaviour
         timeRewardMultiplier = 1;
         episodeEnded = false;
 
-        if (environmentGenerator != null)
+        if (shouldSwitchMap && environmentGenerator != null)
+        {
+            int currentMapIndex = environmentGenerator.currentMapIndex;
+            int nextMapIndex = (currentMapIndex + 1) % TOTAL_MAPS;
+            Debug.Log($"Map {currentMapIndex} completed cycle ({mapSteps[currentMapIndex]} steps total). Switching to Map {nextMapIndex}");
+            environmentGenerator.SwitchToMap(nextMapIndex);
+            shouldSwitchMap = false;
+        }
+        else if (environmentGenerator != null)
         {
             environmentGenerator.ResetPlayerPositions();
-
-            if (targetAgent != null)
-                targetAgent.SyncAfterReset();
-
-            if (chaserAI != null)
-            {
-                chaserAI.ResetAI(chaserAI.transform.position);
-            }
         }
-        else
+
+        if (targetAgent != null)
+            targetAgent.SyncAfterReset();
+
+        if (chaserAI != null)
+        {
+            chaserAI.ResetAI(chaserAI.transform.position);
+        }
+
+        if (environmentGenerator == null)
         {
             if (targetAgent != null)
                 targetAgent.transform.position = new Vector3(19, 19, 0);
@@ -140,6 +193,15 @@ public class TrainingEnvironment : MonoBehaviour
         style.normal.textColor = Color.white;
 
         float y = 10;
+
+        if (environmentGenerator != null)
+        {
+            int currentMap = environmentGenerator.currentMapIndex;
+            int steps = mapSteps[currentMap];
+            float progress = (float)steps / stepsPerMap * 100f;
+            GUI.Label(new Rect(10, y, 400, 30), $"Map {currentMap}: {steps}/{stepsPerMap} ({progress:F1}%)", style);
+            y += 30;
+        }
 
         GUI.Label(new Rect(10, y, 300, 30), $"Survival Time: {episodeTimer:F1}s", style);
         y += 30;
