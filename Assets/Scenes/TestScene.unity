@@ -416,9 +416,9 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 0}
+  m_Model: {fileID: 5022602860645237092, guid: b211e5ad4cdde0842978c35667b61501, type: 3}
   m_InferenceDevice: 0
-  m_BehaviorType: 0
+  m_BehaviorType: 2
   m_BehaviorName: TargetAgent
   TeamId: 0
   m_UseChildSensors: 1
@@ -529,11 +529,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   testMapIndices: 1400000015000000160000001700000018000000190000001a0000001b0000001c0000001d000000
-  episodesPerMap: 100
+  episodesPerMap: 50
   maxEpisodeTime: 30
-  targetAgent: {fileID: 0}
-  chaserAI: {fileID: 0}
-  environmentGenerator: {fileID: 0}
+  targetAgent: {fileID: 822426527}
+  chaserAI: {fileID: 1878556255}
+  environmentGenerator: {fileID: 1360779477}
 --- !u!1 &1360779475
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,0 +1,71 @@
+========== INTERMEDIATE TEST RESULTS ==========
+Test Date: 11/11/2025 12:30:10 PM
+Total Episodes So Far: 2063
+Test Map Range: 100-109
+
+Map 100: 237 episodes
+  Timeout: 237 (100.00%)
+  Caught: 0 (0.00%)
+  Avg Survival: 30.00s
+  Avg Distance: 3.65
+
+Map 101: 203 episodes
+  Timeout: 203 (100.00%)
+  Caught: 0 (0.00%)
+  Avg Survival: 30.00s
+  Avg Distance: 3.49
+
+Map 102: 185 episodes
+  Timeout: 185 (100.00%)
+  Caught: 0 (0.00%)
+  Avg Survival: 30.00s
+  Avg Distance: 3.21
+
+Map 103: 220 episodes
+  Timeout: 220 (100.00%)
+  Caught: 0 (0.00%)
+  Avg Survival: 30.00s
+  Avg Distance: 3.26
+
+Map 104: 207 episodes
+  Timeout: 207 (100.00%)
+  Caught: 0 (0.00%)
+  Avg Survival: 30.00s
+  Avg Distance: 3.10
+
+Map 105: 220 episodes
+  Timeout: 220 (100.00%)
+  Caught: 0 (0.00%)
+  Avg Survival: 30.00s
+  Avg Distance: 3.01
+
+Map 106: 205 episodes
+  Timeout: 205 (100.00%)
+  Caught: 0 (0.00%)
+  Avg Survival: 30.00s
+  Avg Distance: 3.12
+
+Map 107: 189 episodes
+  Timeout: 189 (100.00%)
+  Caught: 0 (0.00%)
+  Avg Survival: 30.00s
+  Avg Distance: 3.24
+
+Map 108: 194 episodes
+  Timeout: 194 (100.00%)
+  Caught: 0 (0.00%)
+  Avg Survival: 30.00s
+  Avg Distance: 3.26
+
+Map 109: 203 episodes
+  Timeout: 203 (100.00%)
+  Caught: 0 (0.00%)
+  Avg Survival: 30.00s
+  Avg Distance: 4.16
+
+========== OVERALL ==========
+Total Episodes: 2063
+Overall Timeout Rate: 100.00%
+Overall Caught Rate: 0.00%
+Overall Avg Survival: 30.00s
+Overall Avg Distance: 3.35

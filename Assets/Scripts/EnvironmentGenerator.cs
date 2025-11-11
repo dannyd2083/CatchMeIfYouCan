@@ -17,14 +17,8 @@ public class EnvironmentGenerator : MonoBehaviour
 
     [Header("Multi-Map Training")]
     public int currentMapIndex = 0;
-    private static readonly int[] MAP_SEEDS = new int[] {
-        12345, 23456, 34567, 45678, 56789,
-        67890, 78901, 89012, 90123, 11234,
-        22345, 33456, 44567, 55678, 66789,
-        77890, 88901, 99012, 10123, 21234,
-        99999, 88888, 77777, 66666, 55555,
-        44444, 33333, 22222, 11111, 10001
-    };
+    
+    private static readonly int[] MAP_SEEDS = GenerateMapSeeds();
 
     [Header("Random Spawn Settings")]
     public int minSpawnDistance = 15;
@@ -32,6 +26,30 @@ public class EnvironmentGenerator : MonoBehaviour
     private Transform mapParent;
     private int[,] maze;
     private static int resetCounter = 0;
+
+    private static int[] GenerateMapSeeds()
+    {
+        int[] seeds = new int[110];
+        
+        System.Random rng = new System.Random(42);
+        for (int i = 0; i < 100; i++)
+        {
+            seeds[i] = rng.Next(10000, 99999);
+        }
+        
+        seeds[100] = 99999;
+        seeds[101] = 88888;
+        seeds[102] = 77777;
+        seeds[103] = 66666;
+        seeds[104] = 55555;
+        seeds[105] = 44444;
+        seeds[106] = 33333;
+        seeds[107] = 22222;
+        seeds[108] = 11111;
+        seeds[109] = 10001;
+        
+        return seeds;
+    }
 
     void Start()
     {

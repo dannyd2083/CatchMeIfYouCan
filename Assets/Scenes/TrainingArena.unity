@@ -516,11 +516,10 @@ MonoBehaviour:
   maxEpisodeTime: 30
   timeRewardInterval: 10
   timeRewardDecay: 0.05
-  stepsPerMap: 2000000
-  stepsBeforeSwitch: 100000
-  targetAgent: {fileID: 0}
-  chaserAI: {fileID: 0}
-  environmentGenerator: {fileID: 0}
+  totalTrainingMaps: 100
+  targetAgent: {fileID: 822426527}
+  chaserAI: {fileID: 1878556255}
+  environmentGenerator: {fileID: 1360779477}
 --- !u!4 &1231551654
 Transform:
   m_ObjectHideFlags: 0

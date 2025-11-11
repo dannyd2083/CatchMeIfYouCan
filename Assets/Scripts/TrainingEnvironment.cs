@@ -9,12 +9,8 @@ public class TrainingEnvironment : MonoBehaviour
     [SerializeField] private float timeRewardDecay = 0.05f;
 
     [Header("Multi-Map Training")]
-    [SerializeField] private int stepsPerMap = 2000000;
-    [SerializeField] private int stepsBeforeSwitch = 100000;
-    private const int TOTAL_MAPS = 20;
-    private int[] mapSteps = new int[TOTAL_MAPS];
-    private int currentStepCount = 0;
-    private bool shouldSwitchMap = false;
+    [SerializeField] private int totalTrainingMaps = 100;
+    private System.Random mapRng;
 
     [Header("References")]
     [SerializeField] private TargetAgent targetAgent;
@@ -54,18 +50,19 @@ public class TrainingEnvironment : MonoBehaviour
             environmentGenerator = FindObjectOfType<EnvironmentGenerator>();
         }
 
-        for (int i = 0; i < TOTAL_MAPS; i++)
+        mapRng = new System.Random(42);
+        
+        if (environmentGenerator != null)
         {
-            mapSteps[i] = 0;
+            int randomMap = mapRng.Next(0, totalTrainingMaps);
+            environmentGenerator.SwitchToMap(randomMap);
+            Debug.Log($"Training started on Map {randomMap}");
         }
     }
 
     void FixedUpdate()
     {
         if (episodeEnded) return;
-
-        currentStepCount++;
-        CheckMapSwitch();
 
         episodeTimer += Time.fixedDeltaTime;
 
@@ -86,34 +83,6 @@ public class TrainingEnvironment : MonoBehaviour
         if (episodeTimer >= maxEpisodeTime)
         {
             OnEpisodeTimeout();
-        }
-    }
-
-    void CheckMapSwitch()
-    {
-        if (environmentGenerator == null) return;
-
-        int currentMapIndex = environmentGenerator.currentMapIndex;
-        mapSteps[currentMapIndex]++;
-
-        if (currentStepCount >= stepsBeforeSwitch)
-        {
-            shouldSwitchMap = true;
-            currentStepCount = 0;
-        }
-
-        bool allCompleted = true;
-        for (int i = 0; i < TOTAL_MAPS; i++)
-        {
-            if (mapSteps[i] < stepsPerMap)
-            {
-                allCompleted = false;
-                break;
-            }
-        }
-        if (allCompleted)
-        {
-            Debug.Log("All maps completed training!");
         }
     }
 
@@ -154,17 +123,10 @@ public class TrainingEnvironment : MonoBehaviour
         timeRewardMultiplier = 1;
         episodeEnded = false;
 
-        if (shouldSwitchMap && environmentGenerator != null)
+        if (environmentGenerator != null)
         {
-            int currentMapIndex = environmentGenerator.currentMapIndex;
-            int nextMapIndex = (currentMapIndex + 1) % TOTAL_MAPS;
-            Debug.Log($"Map {currentMapIndex} completed cycle ({mapSteps[currentMapIndex]} steps total). Switching to Map {nextMapIndex}");
-            environmentGenerator.SwitchToMap(nextMapIndex);
-            shouldSwitchMap = false;
-        }
-        else if (environmentGenerator != null)
-        {
-            environmentGenerator.ResetPlayerPositions();
+            int randomMapIndex = mapRng.Next(0, totalTrainingMaps);
+            environmentGenerator.SwitchToMap(randomMapIndex);
         }
 
         if (targetAgent != null)
@@ -196,31 +158,33 @@ public class TrainingEnvironment : MonoBehaviour
 
         if (environmentGenerator != null)
         {
-            int currentMap = environmentGenerator.currentMapIndex;
-            int steps = mapSteps[currentMap];
-            float progress = (float)steps / stepsPerMap * 100f;
-            GUI.Label(new Rect(10, y, 400, 30), $"Map {currentMap}: {steps}/{stepsPerMap} ({progress:F1}%)", style);
+            GUI.Label(new Rect(10, y, 400, 30), 
+                $"Training Map: {environmentGenerator.currentMapIndex}", style);
             y += 30;
         }
 
-        GUI.Label(new Rect(10, y, 300, 30), $"Survival Time: {episodeTimer:F1}s", style);
+        GUI.Label(new Rect(10, y, 300, 30), 
+            $"Survival Time: {episodeTimer:F1}s", style);
         y += 30;
 
         float remaining = maxEpisodeTime - episodeTimer;
-        GUI.Label(new Rect(10, y, 300, 30), $"Remaining: {remaining:F1}s", style);
+        GUI.Label(new Rect(10, y, 300, 30), 
+            $"Remaining: {remaining:F1}s", style);
         y += 30;
 
         float nextReward = (timeRewardInterval * timeRewardMultiplier) - episodeTimer;
         if (nextReward > 0)
         {
-            GUI.Label(new Rect(10, y, 300, 30), $"Next Reward: {nextReward:F1}s", style);
+            GUI.Label(new Rect(10, y, 300, 30), 
+                $"Next Reward: {nextReward:F1}s", style);
         }
 
         if (targetAgent != null && chaserAI != null)
         {
             float distance = Vector2.Distance(targetAgent.transform.position, chaserAI.transform.position);
             y += 30;
-            GUI.Label(new Rect(10, y, 300, 30), $"Distance: {distance:F1}", style);
+            GUI.Label(new Rect(10, y, 300, 30), 
+                $"Distance: {distance:F1}", style);
         }
     }
 }

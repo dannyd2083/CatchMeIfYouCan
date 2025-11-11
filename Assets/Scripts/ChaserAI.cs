@@ -39,11 +39,9 @@ public class ChaserAI : MonoBehaviour
 
         if (!isMoving && Time.time - lastPathUpdateTime > pathUpdateInterval)
         {
-           
             UpdatePath();
             lastPathUpdateTime = Time.time;
             lastTargetPos = targetTransform.position;
-        
         }
 
         if (!isMoving && currentPath != null && currentPath.Count > 0)
