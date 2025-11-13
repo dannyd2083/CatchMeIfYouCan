@@ -528,8 +528,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e04eafb019b1f504fb818921d48c02bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testMapIndices: 1400000015000000160000001700000018000000190000001a0000001b0000001c0000001d000000
-  episodesPerMap: 50
+  testMapIndices: 6400000065000000660000006700000068000000690000006a0000006b0000006c0000006d000000
+  episodesPerMap: 20
   maxEpisodeTime: 30
   targetAgent: {fileID: 822426527}
   chaserAI: {fileID: 1878556255}
@@ -580,11 +580,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 21
   height: 21
-  extraPassages: 0.2
+  extraPassages: 0.35
   wallColor: {r: 0, g: 0, b: 0, a: 1}
   floorColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
   currentMapIndex: 0
   minSpawnDistance: 15
+  maxSpawnDistance: 15
 --- !u!1 &1878556250
 GameObject:
   m_ObjectHideFlags: 0

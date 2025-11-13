@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class TestEnvironment : MonoBehaviour
 {
     [Header("Test Settings")]
-    [SerializeField] private int[] testMapIndices = new int[] { 20, 21, 22, 23, 24, 25, 26, 27, 28, 29 };
+    [SerializeField] private int[] testMapIndices = new int[] { 250, 251, 252, 253, 254, 255, 256, 257, 258, 259 };
     [SerializeField] private int episodesPerMap = 100;
     [SerializeField] private float maxEpisodeTime = 30f;
 

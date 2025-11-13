@@ -9,7 +9,7 @@ public class TrainingEnvironment : MonoBehaviour
     [SerializeField] private float timeRewardDecay = 0.05f;
 
     [Header("Multi-Map Training")]
-    [SerializeField] private int totalTrainingMaps = 100;
+    [SerializeField] private int totalTrainingMaps = 250;
     private System.Random mapRng;
 
     [Header("References")]
@@ -50,8 +50,10 @@ public class TrainingEnvironment : MonoBehaviour
             environmentGenerator = FindObjectOfType<EnvironmentGenerator>();
         }
 
+        // 初始化地图随机选择器（固定种子42保证可复现）
         mapRng = new System.Random(42);
         
+        // 首次随机选择训练地图
         if (environmentGenerator != null)
         {
             int randomMap = mapRng.Next(0, totalTrainingMaps);
@@ -123,6 +125,7 @@ public class TrainingEnvironment : MonoBehaviour
         timeRewardMultiplier = 1;
         episodeEnded = false;
 
+        // 每个episode随机选择地图（0-99）
         if (environmentGenerator != null)
         {
             int randomMapIndex = mapRng.Next(0, totalTrainingMaps);

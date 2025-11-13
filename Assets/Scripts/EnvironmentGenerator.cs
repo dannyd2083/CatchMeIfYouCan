@@ -9,7 +9,7 @@ public class EnvironmentGenerator : MonoBehaviour
 
     [Header("Extra Passages")]
     [Range(0f, 1.0f)]
-    public float extraPassages = 0.2f;
+    public float extraPassages = 0.35f;
 
     [Header("Visual Settings")]
     public Color wallColor = Color.black;
@@ -18,35 +18,40 @@ public class EnvironmentGenerator : MonoBehaviour
     [Header("Multi-Map Training")]
     public int currentMapIndex = 0;
     
+    // 110个地图种子：前100个用于训练，后10个用于测试
     private static readonly int[] MAP_SEEDS = GenerateMapSeeds();
 
     [Header("Random Spawn Settings")]
-    public int minSpawnDistance = 15;
+    public int minSpawnDistance = 9;
+    public int maxSpawnDistance = 15;
 
     private Transform mapParent;
     private int[,] maze;
     private static int resetCounter = 0;
 
+    // 生成地图种子：250个训练地图 + 10个固定测试地图
     private static int[] GenerateMapSeeds()
     {
-        int[] seeds = new int[110];
+        int[] seeds = new int[260];
         
+        // 生成250个训练地图种子（使用固定种子42保证可复现）
         System.Random rng = new System.Random(42);
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 250; i++)
         {
             seeds[i] = rng.Next(10000, 99999);
         }
         
-        seeds[100] = 99999;
-        seeds[101] = 88888;
-        seeds[102] = 77777;
-        seeds[103] = 66666;
-        seeds[104] = 55555;
-        seeds[105] = 44444;
-        seeds[106] = 33333;
-        seeds[107] = 22222;
-        seeds[108] = 11111;
-        seeds[109] = 10001;
+        // 10个固定测试地图种子（索引250-259）
+        seeds[250] = 99999;
+        seeds[251] = 88888;
+        seeds[252] = 77777;
+        seeds[253] = 66666;
+        seeds[254] = 55555;
+        seeds[255] = 44444;
+        seeds[256] = 33333;
+        seeds[257] = 22222;
+        seeds[258] = 11111;
+        seeds[259] = 10001;
         
         return seeds;
     }
@@ -57,8 +62,8 @@ public class EnvironmentGenerator : MonoBehaviour
         AddExtraPassages();
         EnsureCornerSpaces();
         
-        resetCounter++;
-        Random.InitState((int)(System.DateTime.Now.Ticks + resetCounter * 1000));
+        // 使用固定种子保证出生点可复现
+        Random.InitState(42);
         
         RenderMaze();
         SetupPlayerPositions();
@@ -89,8 +94,9 @@ public class EnvironmentGenerator : MonoBehaviour
         AddExtraPassages();
         EnsureCornerSpaces();
         
+        // 使用固定种子保证可复现
         resetCounter++;
-        Random.InitState((int)(System.DateTime.Now.Ticks + resetCounter * 1000));
+        Random.InitState(42 + resetCounter);
         
         RenderMaze();
         SetupPlayerPositions();
@@ -98,8 +104,9 @@ public class EnvironmentGenerator : MonoBehaviour
 
     public void ResetPlayerPositions()
     {
+        // 出生点随机但可复现（每次reset用不同种子）
         resetCounter++;
-        Random.InitState((int)(System.DateTime.Now.Ticks + resetCounter * 1000));
+        Random.InitState(42 + resetCounter);
         
         SetupPlayerPositions();
     }
@@ -294,11 +301,14 @@ public class EnvironmentGenerator : MonoBehaviour
 
         targetPos = allPositions[Random.Range(0, allPositions.Count)];
 
+        // 随机选择追击者距离（9-15格）
+        int spawnDist = Random.Range(minSpawnDistance, maxSpawnDistance + 1);
+
         List<Vector2Int> validChaserPositions = new List<Vector2Int>();
         foreach (var pos in allPositions)
         {
             int dist = Mathf.Abs(pos.x - targetPos.x) + Mathf.Abs(pos.y - targetPos.y);
-            if (dist >= minSpawnDistance)
+            if (dist >= spawnDist)
             {
                 validChaserPositions.Add(pos);
             }

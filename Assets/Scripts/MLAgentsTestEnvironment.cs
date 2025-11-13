@@ -6,9 +6,11 @@ using System.IO;
 public class MLAgentsTestEnvironment : MonoBehaviour
 {
     [Header("Test Settings")]
-    [SerializeField] private int startTestMapIndex = 100;
-    [SerializeField] private int endTestMapIndex = 109;
+    [SerializeField] private int startTestMapIndex = 250;
+    [SerializeField] private int endTestMapIndex = 259;
     [SerializeField] private float maxEpisodeTime = 30f;
+    [SerializeField] private float timeRewardInterval = 10f;
+    [SerializeField] private float timeRewardDecay = 0.05f;
 
     [Header("References")]
     [SerializeField] private TargetAgent targetAgent;
@@ -20,13 +22,15 @@ public class MLAgentsTestEnvironment : MonoBehaviour
     
     private float episodeTimer = 0f;
     private bool episodeEnded = false;
+    private int timeRewardMultiplier = 1;
 
     private float totalDistanceThisEpisode = 0f;
     private int distanceSampleCount = 0;
     private int currentMapIndex = 100;
 
+    // 统计信息
     private int totalEpisodes = 0;
-    private const int SAVE_INTERVAL = 100;
+    private const int SAVE_INTERVAL = 100; // 每100个episode保存一次
 
     void Start()
     {
@@ -53,13 +57,16 @@ public class MLAgentsTestEnvironment : MonoBehaviour
             environmentGenerator = FindObjectOfType<EnvironmentGenerator>();
         }
 
-        testMapRng = new System.Random(123);
+        // 初始化测试地图随机选择器
+        testMapRng = new System.Random(123); // 固定种子保证可复现
 
+        // 初始化结果字典
         for (int i = startTestMapIndex; i <= endTestMapIndex; i++)
         {
             results[i] = new MLTestResults();
         }
 
+        // 选择第一张测试地图
         SelectRandomTestMap();
     }
 
@@ -68,6 +75,20 @@ public class MLAgentsTestEnvironment : MonoBehaviour
         if (episodeEnded) return;
 
         episodeTimer += Time.fixedDeltaTime;
+
+        // ✅ 时间奖励逻辑（与TrainingEnvironment保持一致）
+        float timeThreshold = timeRewardInterval * timeRewardMultiplier;
+        if (episodeTimer >= timeThreshold)
+        {
+            float reward = 0.8f * Mathf.Exp(-timeRewardDecay * timeRewardMultiplier);
+            
+            if (targetAgent != null)
+                targetAgent.AddReward(reward);
+            
+            timeRewardMultiplier++;
+            
+            Debug.Log($"Time reward! Survived {episodeTimer:F1}s, gained {reward:F3}");
+        }
 
         if (targetAgent != null && chaserAI != null)
         {
@@ -84,6 +105,7 @@ public class MLAgentsTestEnvironment : MonoBehaviour
 
     void SelectRandomTestMap()
     {
+        // 从测试地图范围随机选择
         currentMapIndex = testMapRng.Next(startTestMapIndex, endTestMapIndex + 1);
         
         if (environmentGenerator != null)
@@ -146,6 +168,7 @@ public class MLAgentsTestEnvironment : MonoBehaviour
 
         if (targetAgent != null)
         {
+            targetAgent.AddReward(1.0f);  // ✅ 超时额外奖励
             targetAgent.EndEpisode();
         }
 
@@ -158,7 +181,9 @@ public class MLAgentsTestEnvironment : MonoBehaviour
         episodeEnded = false;
         totalDistanceThisEpisode = 0f;
         distanceSampleCount = 0;
+        timeRewardMultiplier = 1;  // ✅ 重置时间奖励乘数
 
+        // 随机选择下一张测试地图
         SelectRandomTestMap();
 
         if (targetAgent != null)

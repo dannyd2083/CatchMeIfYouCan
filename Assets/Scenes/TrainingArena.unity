@@ -229,7 +229,6 @@ GameObject:
   - component: {fileID: 822426528}
   - component: {fileID: 822426527}
   - component: {fileID: 822426529}
-  - component: {fileID: 822426530}
   - component: {fileID: 822426531}
   m_Layer: 0
   m_Name: Target
@@ -440,34 +439,6 @@ MonoBehaviour:
   DecisionPeriod: 5
   DecisionStep: 0
   TakeActionsBetweenDecisions: 1
---- !u!114 &822426530
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 822426521}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f67c7e722ba14acd9153bb4488bff6e4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SensorName: RayPerceptionSensor
-  m_DetectableTags:
-  - Wall
-  - Chaser
-  m_RaysPerDirection: 8
-  m_MaxRayDegrees: 100
-  m_SphereCastRadius: 0.5
-  m_RayLength: 6
-  m_RayLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967241
-  m_ObservationStacks: 1
-  m_AlternatingRayOrder: 1
-  m_UseBatchedRaycasts: 0
-  rayHitColor: {r: 1, g: 0, b: 0, a: 1}
-  rayMissColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &822426531
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -581,11 +552,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 21
   height: 21
-  extraPassages: 0.2
+  extraPassages: 0.35
   wallColor: {r: 0, g: 0, b: 0, a: 1}
   floorColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
   currentMapIndex: 0
-  minSpawnDistance: 15
+  minSpawnDistance: 9
+  maxSpawnDistance: 15
 --- !u!1 &1878556250
 GameObject:
   m_ObjectHideFlags: 0

@@ -128,10 +128,10 @@ public class TargetAgent : Agent
         {
             float distNow = Vector2.Distance(transform.position, chaserTransform.position);
 
-            AddReward(0.03f * (float)System.Math.Tanh(distNow - lastDistance));
+            AddReward(0.05f * (float)System.Math.Tanh(distNow - lastDistance));
             lastDistance = distNow;
 
-            float safeZone = 7f;
+            float safeZone = 8f;
             float shaping = 0.01f * (float)System.Math.Tanh((distNow - safeZone) / 3f);
             float linear = 0.001f * (distNow - safeZone);
             AddReward(shaping + linear);
