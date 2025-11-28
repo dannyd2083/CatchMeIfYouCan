@@ -229,6 +229,7 @@ GameObject:
   - component: {fileID: 822426528}
   - component: {fileID: 822426527}
   - component: {fileID: 822426529}
+  - component: {fileID: 822426531}
   m_Layer: 0
   m_Name: Target
   m_TagString: Untagged
@@ -438,6 +439,22 @@ MonoBehaviour:
   DecisionPeriod: 5
   DecisionStep: 0
   TakeActionsBetweenDecisions: 1
+--- !u!114 &822426531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 822426521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88b6042bc9a5d4aa58d931eae49442e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentParameters:
+    maxStep: 0
+  hasUpgradedFromAgentParameters: 1
+  MaxStep: 0
 --- !u!1 &1231551652
 GameObject:
   m_ObjectHideFlags: 0
@@ -447,7 +464,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1231551654}
-  - component: {fileID: 1231551653}
+  - component: {fileID: 1231551655}
   m_Layer: 0
   m_Name: TrainingEnvironment
   m_TagString: Untagged
@@ -455,28 +472,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1231551653
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1231551652}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cdac460b95e3d554a8a0fc1fdf62e6e2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  trainingMode: 1
-  maxEpisodeTime: 30
-  timeRewardInterval: 10
-  timeRewardDecay: 0.05
-  totalTrainingMaps: 50
-  targetAgent: {fileID: 822426527}
-  chaserAI: {fileID: 0}
-  chaserAgent: {fileID: 1878556256}
-  environmentGenerator: {fileID: 1360779477}
-  catchRadius: 1
 --- !u!4 &1231551654
 Transform:
   m_ObjectHideFlags: 0
@@ -492,6 +487,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1231551655
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1231551652}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e04eafb019b1f504fb818921d48c02bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  testMapIndices: 32000000330000003400000035000000360000003700000038000000390000003a0000003b000000
+  episodesPerMap: 100
+  maxEpisodeTime: 30
+  testMode: 1
+  targetAgent: {fileID: 822426527}
+  chaserAI: {fileID: 0}
+  chaserAgent: {fileID: 1878556257}
+  environmentGenerator: {fileID: 1360779477}
 --- !u!1 &1360779475
 GameObject:
   m_ObjectHideFlags: 0
@@ -542,8 +557,8 @@ MonoBehaviour:
   wallColor: {r: 0, g: 0, b: 0, a: 1}
   floorColor: {r: 0.85, g: 0.85, b: 0.85, a: 1}
   currentMapIndex: 0
-  minSpawnDistance: 10
-  maxSpawnDistance: 12
+  minSpawnDistance: 9
+  maxSpawnDistance: 15
 --- !u!1 &1878556250
 GameObject:
   m_ObjectHideFlags: 0
@@ -558,8 +573,8 @@ GameObject:
   - component: {fileID: 1878556254}
   - component: {fileID: 1878556255}
   - component: {fileID: 1878556258}
-  - component: {fileID: 1878556256}
   - component: {fileID: 1878556257}
+  - component: {fileID: 1878556256}
   m_Layer: 0
   m_Name: Chaser
   m_TagString: Chaser
@@ -736,6 +751,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 1878556250}
   m_Enabled: 1
   m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a5c9d521e5ef4759a8246a07d52221e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DecisionPeriod: 5
+  DecisionStep: 0
+  TakeActionsBetweenDecisions: 1
+--- !u!114 &1878556257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1878556250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 62b54edba9d9aee4db8ddf214a952f79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -749,21 +779,6 @@ MonoBehaviour:
   predictionHorizon: 2
   turnSlowDuration: 2
   turnSlowScale: 0.1
---- !u!114 &1878556257
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1878556250}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a5c9d521e5ef4759a8246a07d52221e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  DecisionPeriod: 5
-  DecisionStep: 0
-  TakeActionsBetweenDecisions: 0
 --- !u!114 &1878556258
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -786,9 +801,9 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 0}
+  m_Model: {fileID: 5022602860645237092, guid: 1d3236095c16dff4599d3fbc5ffd654c, type: 3}
   m_InferenceDevice: 0
-  m_BehaviorType: 0
+  m_BehaviorType: 2
   m_BehaviorName: ChaserAgent
   TeamId: 0
   m_UseChildSensors: 1

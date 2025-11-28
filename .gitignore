@@ -24,8 +24,23 @@ Thumbs.db
 __pycache__/
 *.pyc
 venv/
+venv310/
 
 # ML-Agents training results
-results/
-models/
-*.onnx
+# Ignore everything in results
+results/**
+
+# But not these directories (need to traverse them)
+!results/
+!results/*/
+
+# And keep these specific files
+!results/*/ChaserAgent.onnx
+!results/*/TargetAgent.onnx
+!results/*/configuration.yaml
+
+
+# Unity build output
+Builds/
+TestBuilds/
+TestResults/
