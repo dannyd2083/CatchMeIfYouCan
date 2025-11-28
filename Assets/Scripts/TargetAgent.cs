@@ -21,9 +21,7 @@ public class TargetAgent : Agent
     private float totalDistanceFromChaser = 0f;
     private int distanceSampleCount = 0;
 
-    // 🔥 转弯检测
     private Vector3 lastMoveDirection = Vector3.zero;
-    // 🔥 固定危险区距离
     private const float dangerDistance = 5f;
 
     public override void Initialize()
@@ -80,7 +78,6 @@ public class TargetAgent : Agent
             sensor.AddObservation(toChaserDirection.y);
             float distance = Vector2.Distance(transform.position, chaserTransform.position);
             sensor.AddObservation(distance / 30f);
-            // 🔥 危险区 observation
             sensor.AddObservation(distance < dangerDistance ? 1f : 0f);
         }
         else
@@ -88,7 +85,7 @@ public class TargetAgent : Agent
             sensor.AddObservation(0f);
             sensor.AddObservation(0f);
             sensor.AddObservation(0f);
-            sensor.AddObservation(0f); // 对应危险区 flag，占位补 0
+            sensor.AddObservation(0f);
         }
 
         int[,] maze = envGenerator.GetMaze();
@@ -112,8 +109,6 @@ public class TargetAgent : Agent
         sensor.AddObservation(lastMoveDirection.x);
         sensor.AddObservation(lastMoveDirection.y);
 
-        
-        // 局部拓扑度observation (保留)
         int degree = CountLocalDegree(px, py, maze);
         sensor.AddObservation(degree / 4f);
     }
@@ -144,7 +139,6 @@ public class TargetAgent : Agent
         {
             float distNow = Vector2.Distance(transform.position, chaserTransform.position);
 
-            // 🔥 Δdistance reward（危险区 ×2）
             if (distNow < dangerDistance)
                 AddReward(0.1f * (float)System.Math.Tanh(distNow - lastDistance));
             else
@@ -152,7 +146,6 @@ public class TargetAgent : Agent
 
             lastDistance = distNow;
 
-            // 🔥 危险区转弯奖励（不加直线惩罚）
             bool isTurning = (direction != lastMoveDirection && direction != Vector3.zero);
             if (distNow < dangerDistance && isTurning && distNow > lastDistance)
                 AddReward(+0.03f);
@@ -166,13 +159,7 @@ public class TargetAgent : Agent
             AddReward(shaping + linear);
         }
 
-        // 🔥 生存奖励从 0.005f → 0.01f
         AddReward(0.01f);
-        
-        // ========== 删除：基于度数的reward shaping ==========
-        // 原因：死角已被物理移除，不需要通过reward引导避免特定地形
-        // 让agent自己学习在不同地形(走廊/路口)的最优策略
-        // ===================================================
     }
 
     private Vector3 GetDirection(int action)
@@ -207,7 +194,6 @@ public class TargetAgent : Agent
         return maze[x, y] == 1;
     }
 
-    // 计算局部拓扑度 (保留)
     private int CountLocalDegree(int x, int y, int[,] maze)
     {
         int width = maze.GetLength(0);
@@ -276,16 +262,16 @@ public class TargetAgent : Agent
     public override void Heuristic(in ActionBuffers actionsOut)
     {
         var discrete = actionsOut.DiscreteActions;
-        int action = 0; // 0 = 不动
+        int action = 0;
 
         if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.W))
-            action = 1; // 上
+            action = 1;
         else if (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S))
-            action = 2; // 下
+            action = 2;
         else if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
-            action = 3; // 左
+            action = 3;
         else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
-            action = 4; // 右
+            action = 4;
 
         discrete[0] = action;
     }

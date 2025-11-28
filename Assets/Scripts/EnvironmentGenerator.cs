@@ -17,8 +17,6 @@ public class EnvironmentGenerator : MonoBehaviour
 
     [Header("Multi-Map Training")]
     public int currentMapIndex = 0;
-    
-    // 110个地图种子：前100个用于训练，后10个用于测试
     private static readonly int[] MAP_SEEDS = GenerateMapSeeds();
 
     [Header("Random Spawn Settings")]
@@ -29,19 +27,16 @@ public class EnvironmentGenerator : MonoBehaviour
     private int[,] maze;
     private static int resetCounter = 0;
 
-    // 生成地图种子：250个训练地图 + 10个固定测试地图
     private static int[] GenerateMapSeeds()
     {
         int[] seeds = new int[60];
         
-        // 生成250个训练地图种子（使用固定种子42保证可复现）
         System.Random rng = new System.Random(42);
         for (int i = 0; i < 50; i++)
         {
             seeds[i] = rng.Next(10000, 99999);
         }
         
-        // 10个固定测试地图种子（索引250-259）
         seeds[50] = 99999;
         seeds[51] = 88888;
         seeds[52] = 77777;
@@ -62,8 +57,6 @@ public class EnvironmentGenerator : MonoBehaviour
         AddExtraPassages();
         RemoveDeadEnds();
         EnsureCornerSpaces();
-        
-        // 使用固定种子保证出生点可复现
         Random.InitState(42);
         
         RenderMaze();
@@ -95,8 +88,6 @@ public class EnvironmentGenerator : MonoBehaviour
         AddExtraPassages();
         RemoveDeadEnds();
         EnsureCornerSpaces();
-        
-        // 使用固定种子保证可复现
         resetCounter++;
         Random.InitState(42 + resetCounter);
         
@@ -106,7 +97,6 @@ public class EnvironmentGenerator : MonoBehaviour
 
     public void ResetPlayerPositions()
     {
-        // 出生点随机但可复现（每次reset用不同种子）
         resetCounter++;
         Random.InitState(42 + resetCounter);
         
@@ -187,17 +177,16 @@ public class EnvironmentGenerator : MonoBehaviour
         {
             for (int y = 1; y < height - 1; y++)
             {
-                if (maze[x, y] == 0)  // 可走格子
+                if (maze[x, y] == 0)
                 {
                     int walkableNeighbors = 0;
                     
-                    // 检查四个方向
                     if (maze[x + 1, y] == 0) walkableNeighbors++;
                     if (maze[x - 1, y] == 0) walkableNeighbors++;
                     if (maze[x, y + 1] == 0) walkableNeighbors++;
                     if (maze[x, y - 1] == 0) walkableNeighbors++;
                     
-                    if (walkableNeighbors == 1)  // 只有一个出口 = 死角端点
+                    if (walkableNeighbors == 1)
                     {
                         deadEnds.Add(new Vector2Int(x, y));
                     }
@@ -220,7 +209,6 @@ public class EnvironmentGenerator : MonoBehaviour
         {
             depth++;
             
-            // 找下一个可走的邻居(排除来时的路)
             List<Vector2Int> neighbors = new List<Vector2Int>();
             
             if (maze[currentX + 1, currentY] == 0 && !(currentX + 1 == prevX && currentY == prevY))
@@ -232,13 +220,12 @@ public class EnvironmentGenerator : MonoBehaviour
             if (maze[currentX, currentY - 1] == 0 && !(currentX == prevX && currentY - 1 == prevY))
                 neighbors.Add(new Vector2Int(currentX, currentY - 1));
             
-            if (neighbors.Count == 0)  // 到头了
+            if (neighbors.Count == 0)
                 break;
             
-            if (neighbors.Count > 1)  // 遇到分叉,不再是死角
+            if (neighbors.Count > 1)
                 break;
             
-            // 继续往前走
             prevX = currentX;
             prevY = currentY;
             currentX = neighbors[0].x;
@@ -252,12 +239,11 @@ public class EnvironmentGenerator : MonoBehaviour
     {
         List<Vector2Int> breakableWalls = new List<Vector2Int>();
         
-        // 检查四周的墙,看墙的另一侧是否是可走区域
         Vector2Int[] directions = {
-            new Vector2Int(1, 0),   // 右
-            new Vector2Int(-1, 0),  // 左
-            new Vector2Int(0, 1),   // 上
-            new Vector2Int(0, -1)   // 下
+            new Vector2Int(1, 0),
+            new Vector2Int(-1, 0),
+            new Vector2Int(0, 1),
+            new Vector2Int(0, -1)
         };
         
         foreach (var dir in directions)
@@ -267,7 +253,6 @@ public class EnvironmentGenerator : MonoBehaviour
             int beyondX = x + dir.x * 2;
             int beyondY = y + dir.y * 2;
             
-            // 检查:1)这是墙 2)不是边界 3)墙的另一侧是可走区域
             if (wallX > 0 && wallX < width - 1 && wallY > 0 && wallY < height - 1 &&
                 maze[wallX, wallY] == 1 &&
                 beyondX > 0 && beyondX < width - 1 && beyondY > 0 && beyondY < height - 1 &&
@@ -277,7 +262,6 @@ public class EnvironmentGenerator : MonoBehaviour
             }
         }
         
-        // 随机打通一面墙
         if (breakableWalls.Count > 0)
         {
             Vector2Int wall = breakableWalls[Random.Range(0, breakableWalls.Count)];
@@ -424,7 +408,6 @@ public class EnvironmentGenerator : MonoBehaviour
 
         targetPos = allPositions[Random.Range(0, allPositions.Count)];
 
-        // 随机选择追击者距离（9-15格）
         int spawnDist = Random.Range(minSpawnDistance, maxSpawnDistance + 1);
 
         List<Vector2Int> validChaserPositions = new List<Vector2Int>();

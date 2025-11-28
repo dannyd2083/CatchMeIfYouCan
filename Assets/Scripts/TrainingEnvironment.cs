@@ -3,8 +3,8 @@ using Unity.MLAgents;
 
 public enum TrainingMode
 {
-    TrainTarget,    // 训练Target，Chaser用脚本AI
-    TrainChaser     // 训练Chaser，Target用训练好的模型
+    TrainTarget,
+    TrainChaser
 }
 
 public class TrainingEnvironment : MonoBehaviour
@@ -23,8 +23,8 @@ public class TrainingEnvironment : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private TargetAgent targetAgent;
-    [SerializeField] private ChaserAI chaserAI;           // TrainTarget模式用
-    [SerializeField] private ChaserAgent chaserAgent;     // TrainChaser模式用
+    [SerializeField] private ChaserAI chaserAI;
+    [SerializeField] private ChaserAgent chaserAgent;
     [SerializeField] private EnvironmentGenerator environmentGenerator;
 
     [Header("Catch Settings")]
@@ -47,7 +47,6 @@ public class TrainingEnvironment : MonoBehaviour
             }
         }
 
-        // 根据模式查找对应的Chaser组件
         GameObject chaser = GameObject.Find("Chaser");
         if (chaser != null)
         {
@@ -57,7 +56,7 @@ public class TrainingEnvironment : MonoBehaviour
                 if (chaserAI == null)
                     chaserAI = chaser.AddComponent<ChaserAI>();
             }
-            else // TrainChaser
+            else
             {
                 chaserAgent = chaser.GetComponent<ChaserAgent>();
                 if (chaserAgent == null)
@@ -70,15 +69,10 @@ public class TrainingEnvironment : MonoBehaviour
             environmentGenerator = FindObjectOfType<EnvironmentGenerator>();
         }
 
-        // 初始化地图随机选择器（固定种子42保证可复现）
         mapRng = new System.Random(42);
-        
-        // 首次随机选择训练地图
+
         if (environmentGenerator != null)
         {
-            // int fixedMap = 0;
-            // environmentGenerator.SwitchToMap(fixedMap);
-
             int mapIndex = mapRng.Next(0, totalTrainingMaps);
             environmentGenerator.SwitchToMap(mapIndex);
         }
@@ -92,7 +86,6 @@ public class TrainingEnvironment : MonoBehaviour
 
         episodeTimer += Time.fixedDeltaTime;
 
-        // 时间奖励（只在TrainTarget模式下给Target）
         if (trainingMode == TrainingMode.TrainTarget)
         {
             float timeThreshold = timeRewardInterval * timeRewardMultiplier;
@@ -107,7 +100,6 @@ public class TrainingEnvironment : MonoBehaviour
             }
         }
 
-        // 检查抓住（TrainChaser模式需要自己检测）
         if (trainingMode == TrainingMode.TrainChaser)
         {
             CheckCatch();
@@ -145,7 +137,6 @@ public class TrainingEnvironment : MonoBehaviour
             targetAgent.OnCaught();
         }
 
-        // TrainChaser模式：给Chaser奖励
         if (trainingMode == TrainingMode.TrainChaser && chaserAgent != null)
         {
             chaserAgent.OnCatchTarget();
@@ -169,7 +160,6 @@ public class TrainingEnvironment : MonoBehaviour
             targetAgent.EndByTimeout();
         }
 
-        // TrainChaser模式：给Chaser惩罚
         if (trainingMode == TrainingMode.TrainChaser && chaserAgent != null)
         {
             chaserAgent.OnTimeout();
@@ -186,7 +176,6 @@ public class TrainingEnvironment : MonoBehaviour
 
         if (environmentGenerator != null)
         {
-            //environmentGenerator.ResetPlayerPositions();
             int mapIndex = mapRng.Next(0, totalTrainingMaps);
             environmentGenerator.SwitchToMap(mapIndex);
         }
@@ -194,7 +183,6 @@ public class TrainingEnvironment : MonoBehaviour
         if (targetAgent != null)
             targetAgent.SyncAfterReset();
 
-        // 根据模式重置对应的Chaser
         if (trainingMode == TrainingMode.TrainTarget)
         {
             if (chaserAI != null)
@@ -228,7 +216,6 @@ public class TrainingEnvironment : MonoBehaviour
 
         float y = 10;
 
-        // 显示当前模式
         string modeStr = trainingMode == TrainingMode.TrainTarget ? 
             "=== TRAIN TARGET ===" : "=== TRAIN CHASER ===";
         GUI.Label(new Rect(10, y, 400, 30), modeStr, style);
@@ -250,7 +237,6 @@ public class TrainingEnvironment : MonoBehaviour
             $"Remaining: {remaining:F1}s", style);
         y += 30;
 
-        // 只在TrainTarget模式显示下次奖励时间
         if (trainingMode == TrainingMode.TrainTarget)
         {
             float nextReward = (timeRewardInterval * timeRewardMultiplier) - episodeTimer;
@@ -262,7 +248,6 @@ public class TrainingEnvironment : MonoBehaviour
             }
         }
 
-        // 显示距离
         Transform chaserTransform = null;
         if (trainingMode == TrainingMode.TrainTarget && chaserAI != null)
             chaserTransform = chaserAI.transform;

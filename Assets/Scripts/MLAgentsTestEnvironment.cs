@@ -28,9 +28,8 @@ public class MLAgentsTestEnvironment : MonoBehaviour
     private int distanceSampleCount = 0;
     private int currentMapIndex = 100;
 
-    // 统计信息
     private int totalEpisodes = 0;
-    private const int SAVE_INTERVAL = 100; // 每100个episode保存一次
+    private const int SAVE_INTERVAL = 100;
 
     void Start()
     {
@@ -57,16 +56,13 @@ public class MLAgentsTestEnvironment : MonoBehaviour
             environmentGenerator = FindObjectOfType<EnvironmentGenerator>();
         }
 
-        // 初始化测试地图随机选择器
-        testMapRng = new System.Random(123); // 固定种子保证可复现
-
-        // 初始化结果字典
+        testMapRng = new System.Random(123);
+        
         for (int i = startTestMapIndex; i <= endTestMapIndex; i++)
         {
             results[i] = new MLTestResults();
         }
 
-        // 选择第一张测试地图
         SelectRandomTestMap();
     }
 
@@ -76,7 +72,6 @@ public class MLAgentsTestEnvironment : MonoBehaviour
 
         episodeTimer += Time.fixedDeltaTime;
 
-        // ✅ 时间奖励逻辑（与TrainingEnvironment保持一致）
         float timeThreshold = timeRewardInterval * timeRewardMultiplier;
         if (episodeTimer >= timeThreshold)
         {
@@ -105,7 +100,6 @@ public class MLAgentsTestEnvironment : MonoBehaviour
 
     void SelectRandomTestMap()
     {
-        // 从测试地图范围随机选择
         currentMapIndex = testMapRng.Next(startTestMapIndex, endTestMapIndex + 1);
         
         if (environmentGenerator != null)
@@ -168,7 +162,7 @@ public class MLAgentsTestEnvironment : MonoBehaviour
 
         if (targetAgent != null)
         {
-            targetAgent.AddReward(1.0f);  // ✅ 超时额外奖励
+            targetAgent.AddReward(1.0f);
             targetAgent.EndEpisode();
         }
 
@@ -181,9 +175,8 @@ public class MLAgentsTestEnvironment : MonoBehaviour
         episodeEnded = false;
         totalDistanceThisEpisode = 0f;
         distanceSampleCount = 0;
-        timeRewardMultiplier = 1;  // ✅ 重置时间奖励乘数
+        timeRewardMultiplier = 1;
 
-        // 随机选择下一张测试地图
         SelectRandomTestMap();
 
         if (targetAgent != null)

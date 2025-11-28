@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 public enum TestMode
 {
-    TestTarget,   // Target(RL) vs ChaserAI(script)
-    TestChaser    // Target(RL) vs ChaserAgent(RL)
+    TestTarget,
+    TestChaser
 }
 
 public class TestEnvironment : MonoBehaviour
@@ -20,8 +20,8 @@ public class TestEnvironment : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private TargetAgent targetAgent;
-    [SerializeField] private ChaserAI chaserAI;         // 用于 TestTarget
-    [SerializeField] private ChaserAgent chaserAgent;   // 用于 TestChaser
+    [SerializeField] private ChaserAI chaserAI;
+    [SerializeField] private ChaserAgent chaserAgent;
     [SerializeField] private EnvironmentGenerator environmentGenerator;
 
     private int currentTestMapIdx = 0;
@@ -51,14 +51,12 @@ public class TestEnvironment : MonoBehaviour
 
         if (testMode == TestMode.TestTarget)
         {
-            // 原模式：Target RL + Chaser 脚本 AI
             if (chaserAI == null && chaserObj != null)
                 chaserAI = chaserObj.GetComponent<ChaserAI>();
             chaserAgent = null;
         }
-        else // TestChaser
+        else
         {
-            // 新模式：Target RL + Chaser RL
             if (chaserAgent == null && chaserObj != null)
                 chaserAgent = chaserObj.GetComponent<ChaserAgent>();
             chaserAI = null;
@@ -83,7 +81,6 @@ public class TestEnvironment : MonoBehaviour
 
         episodeTimer += Time.fixedDeltaTime;
 
-        // 根据当前模式选择使用哪个 chaser 的位置
         if (targetAgent != null)
         {
             Transform chaserTf = null;
@@ -137,7 +134,6 @@ public class TestEnvironment : MonoBehaviour
 
         Debug.Log($"Map {currentMapIndex} - Episode {currentEpisodeCount + 1}/{episodesPerMap}: CAUGHT at {survivalTime:F2}s, AvgDist: {avgDist:F2}");
 
-        // 如果在测试 Chaser 模式，给 ChaserAgent 奖励
         if (testMode == TestMode.TestChaser && chaserAgent != null)
         {
             chaserAgent.OnCatchTarget();
@@ -169,7 +165,6 @@ public class TestEnvironment : MonoBehaviour
 
         Debug.Log($"Map {currentMapIndex} - Episode {currentEpisodeCount + 1}/{episodesPerMap}: TIMEOUT at {survivalTime:F2}s, AvgDist: {avgDist:F2}");
 
-        // 测试 Chaser 模式时给 ChaserAgent 惩罚
         if (testMode == TestMode.TestChaser && chaserAgent != null)
         {
             chaserAgent.OnTimeout();
@@ -224,13 +219,11 @@ public class TestEnvironment : MonoBehaviour
             if (targetAgent != null)
                 targetAgent.SyncAfterReset();
 
-            // 原来的脚本 Chaser 重置逻辑（仅 TestTarget 时使用）
             if (testMode == TestMode.TestTarget && chaserAI != null)
             {
                 chaserAI.ResetAI(chaserAI.transform.position);
             }
 
-            // 新增：测试 Chaser 时使用 RL Chaser 的同步
             if (testMode == TestMode.TestChaser && chaserAgent != null)
             {
                 chaserAgent.SyncAfterReset();
@@ -259,8 +252,6 @@ public class TestEnvironment : MonoBehaviour
     {
         var stats = Academy.Instance.StatsRecorder;
 
-        // 这里仍然记录到 Target 下（保持和你原来的逻辑一致）
-        // 如果你之后想拆成 Chaser/* 和 Target/* 可以再调。
         stats.Add("Target/SurvivalTime", survivalTime);
         stats.Add("Target/AvgDistance", avgDistance);
         stats.Add("Target/Timeout", wasCaught ? 0f : 1f);

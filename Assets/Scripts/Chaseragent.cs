@@ -36,10 +36,9 @@ public class ChaserAgent : Agent
     private float lastShortInterceptDist = 0f;
     private float lastLongInterceptDist = 0f;
 
-    // 🔥 Target 转弯触发的持续减速
     private float turningSlowTimer = 0f;
-    [SerializeField] private float turnSlowDuration = 2.0f;   // 减速持续时间
-    [SerializeField] private float turnSlowScale = 0.1f;      // 减速比例
+    [SerializeField] private float turnSlowDuration = 2.0f;
+    [SerializeField] private float turnSlowScale = 0.1f;
 
     public override void Initialize()
     {
@@ -90,18 +89,12 @@ public class ChaserAgent : Agent
 
         if (isMoving)
         {
-            // =============================
-            // 🔥 Target 是否在转弯（方向变化）
-            // =============================
             float targetTurnDot = 1f;
             if (lastTargetDir2D != Vector2.zero && targetMoveDirection != Vector2.zero)
                 targetTurnDot = Vector2.Dot(lastTargetDir2D.normalized, targetMoveDirection.normalized);
 
             bool targetIsTurning = targetTurnDot < 0.75f;
 
-            // =============================
-            // 🔥 Chaser 是否在 target 的正后方
-            // =============================
             float rearDot = 0f;
             if (lastMoveDirection != Vector3.zero)
             {
@@ -109,27 +102,19 @@ public class ChaserAgent : Agent
                 Vector2 lm = new Vector2(lastMoveDirection.x, lastMoveDirection.y).normalized;
                 rearDot = Vector2.Dot(lm, toTarget);
             }
-            bool isRearTracking = rearDot > 0.6f;   // 不误伤侧后截击
+            bool isRearTracking = rearDot > 0.6f;
 
-            // =============================
-            // 🔥 距离是否近
-            // =============================
             float chaseDistance = Vector2.Distance(transform.position, targetTransform.position);
             bool isClose = chaseDistance < 2.0f;
 
-            // =============================
-            // 🔥 满足条件 → 触发 1.5 秒的强减速
-            // =============================
             if (targetIsTurning && isRearTracking && isClose)
             {
                 turningSlowTimer = turnSlowDuration;
             }
 
-            // 计时器递减
             if (turningSlowTimer > 0f)
                 turningSlowTimer -= Time.fixedDeltaTime;
 
-            // 应用减速（20% 速度）
             float turnSpeedScale = (turningSlowTimer > 0f) ? turnSlowScale : 1f;
             float finalSpeed = currentSpeed * turnSpeedScale;
 
@@ -327,7 +312,6 @@ public class ChaserAgent : Agent
 
         lastTargetDir2D = targetMoveDirection;
 
-        // ========= 🔥 Target 转弯惩罚 =========
         float targetTurnDotReward = 1f;
         if (lastTargetDir2D != Vector2.zero && targetMoveDirection != Vector2.zero)
             targetTurnDotReward = Vector2.Dot(lastTargetDir2D.normalized, targetMoveDirection.normalized);
@@ -390,9 +374,6 @@ public class ChaserAgent : Agent
         return c;
     }
 
-    // ============================================
-    // 🔥 Required functions (must NOT remove)
-    // ============================================
     public void OnCatchTarget()
     {
         float catchTime = Time.time - episodeStartTime;

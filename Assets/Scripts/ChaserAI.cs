@@ -7,7 +7,7 @@ public class ChaserAI : MonoBehaviour
     [SerializeField] private float normalSpeed = 4.6f;
     [SerializeField] private float aggressiveSpeed = 5.5f;
     [SerializeField] private float normalUpdateInterval = 0.8f;
-    [SerializeField] private float aggressiveUpdateInterval = 0.3f; // ✅ 新增：危险区路径更新间隔
+    [SerializeField] private float aggressiveUpdateInterval = 0.3f;
 
     [Header("Turn Detection")]
     [SerializeField] private float dangerDistance = 5f;
@@ -29,7 +29,6 @@ public class ChaserAI : MonoBehaviour
     private int currentPathIndex = 0;
     private float lastPathUpdateTime = 0f;
 
-    // 转弯检测
     private Vector3 lastTargetPosition;
     private Vector2 lastTargetDirection = Vector2.zero;
     private float lastTurnTime = -999f;
@@ -55,7 +54,6 @@ public class ChaserAI : MonoBehaviour
 
         float distanceToTarget = Vector3.Distance(transform.position, targetTransform.position);
 
-        // ✅ 1. 根据距离设置速度并实时检测转弯
         if (distanceToTarget < dangerDistance)
         {
             currentSpeed = aggressiveSpeed;
@@ -69,14 +67,12 @@ public class ChaserAI : MonoBehaviour
             lastTargetPosition = targetTransform.position;
         }
 
-        // ✅ 2. 检查是否应该更新路径
         if (ShouldUpdatePath(distanceToTarget))
         {
             UpdatePath();
             lastPathUpdateTime = Time.time;
         }
 
-        // ✅ 3. 处理移动
         ProcessMovement();
         
         CheckCatch();
@@ -97,7 +93,6 @@ public class ChaserAI : MonoBehaviour
                 
                 if (angle > turnAngleThreshold && angle < 135f)
                 {
-                    //Debug.Log($"[实时] 检测到转弯! 角度: {angle}°, 移动距离: {movementDistance:F2}");
                     lastTurnTime = Time.time;
                 }
             }
@@ -109,25 +104,22 @@ public class ChaserAI : MonoBehaviour
 
     bool ShouldUpdatePath(float distanceToTarget)
     {
-        // ✅ 根据是否在危险区选择不同的更新间隔
         float currentUpdateInterval = (distanceToTarget < dangerDistance) 
             ? aggressiveUpdateInterval 
             : normalUpdateInterval;
 
-        // 检查是否达到更新间隔
         if (Time.time - lastPathUpdateTime < currentUpdateInterval)
         {
             return false;
         }
 
-        // ✅ 在危险区且刚转弯：延迟更新
         if (distanceToTarget < dangerDistance)
         {
             float timeSinceTurn = Time.time - lastTurnTime;
             
             if (timeSinceTurn < turnDelay)
             {
-                return false;  // 还在转弯延迟期，不更新
+                return false;
             }
         }
 
@@ -169,7 +161,6 @@ public class ChaserAI : MonoBehaviour
             return;
         }
 
-        // 跳过已经到达的路径点
         while (currentPathIndex < currentPath.Count)
         {
             Vector3 waypoint = new Vector3(
@@ -188,7 +179,6 @@ public class ChaserAI : MonoBehaviour
             }
         }
 
-        // 选择下一个有效的路径点
         if (currentPathIndex < currentPath.Count)
         {
             Vector2Int nextPos = currentPath[currentPathIndex];
