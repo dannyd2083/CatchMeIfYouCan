@@ -502,6 +502,7 @@ MonoBehaviour:
   testMapIndices: 32000000330000003400000035000000360000003700000038000000390000003a0000003b000000
   episodesPerMap: 100
   maxEpisodeTime: 30
+  catchRadius: 1
   testMode: 1
   targetAgent: {fileID: 822426527}
   chaserAI: {fileID: 0}
@@ -779,6 +780,10 @@ MonoBehaviour:
   predictionHorizon: 2
   turnSlowDuration: 2
   turnSlowScale: 0.1
+  minEngageDistance: 1.5
+  maxEngageDistance: 6
+  distRewardScale: 0.01
+  farPenalty: -0.003
 --- !u!114 &1878556258
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -792,7 +797,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 103
+    VectorObservationSize: 99
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0

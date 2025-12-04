@@ -227,8 +227,8 @@ GameObject:
   - component: {fileID: 822426523}
   - component: {fileID: 822426522}
   - component: {fileID: 822426528}
-  - component: {fileID: 822426527}
   - component: {fileID: 822426529}
+  - component: {fileID: 822426530}
   m_Layer: 0
   m_Name: Target
   m_TagString: Untagged
@@ -375,23 +375,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &822426527
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 822426521}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ba5ad9cf45582e4439c651cc4f7d56c6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  agentParameters:
-    maxStep: 0
-  hasUpgradedFromAgentParameters: 1
-  MaxStep: 0
-  moveSpeed: 4
 --- !u!114 &822426528
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -438,6 +421,23 @@ MonoBehaviour:
   DecisionPeriod: 5
   DecisionStep: 0
   TakeActionsBetweenDecisions: 1
+--- !u!114 &822426530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 822426521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba5ad9cf45582e4439c651cc4f7d56c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentParameters:
+    maxStep: 0
+  hasUpgradedFromAgentParameters: 1
+  MaxStep: 0
+  moveSpeed: 4
 --- !u!1 &1231551652
 GameObject:
   m_ObjectHideFlags: 0
@@ -472,9 +472,13 @@ MonoBehaviour:
   timeRewardInterval: 10
   timeRewardDecay: 0.05
   totalTrainingMaps: 50
-  targetAgent: {fileID: 822426527}
+  targetAgent: {fileID: 822426530}
+  targetAgentNoDist: {fileID: 0}
+  targetAgentNoTurn: {fileID: 0}
   chaserAI: {fileID: 0}
-  chaserAgent: {fileID: 1878556256}
+  chaserAgent: {fileID: 0}
+  chaserAgentNoDist: {fileID: 1878556260}
+  chaserAgentNoBFS: {fileID: 0}
   environmentGenerator: {fileID: 1360779477}
   catchRadius: 1
 --- !u!4 &1231551654
@@ -558,8 +562,9 @@ GameObject:
   - component: {fileID: 1878556254}
   - component: {fileID: 1878556255}
   - component: {fileID: 1878556258}
-  - component: {fileID: 1878556256}
   - component: {fileID: 1878556257}
+  - component: {fileID: 1878556259}
+  - component: {fileID: 1878556260}
   m_Layer: 0
   m_Name: Chaser
   m_TagString: Chaser
@@ -727,28 +732,6 @@ MonoBehaviour:
   turnAngleThreshold: 45
   turnDetectionDistance: 0.5
   catchRadius: 1
---- !u!114 &1878556256
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1878556250}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62b54edba9d9aee4db8ddf214a952f79, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  agentParameters:
-    maxStep: 0
-  hasUpgradedFromAgentParameters: 1
-  MaxStep: 0
-  normalSpeed: 4.6
-  aggressiveSpeed: 5.5
-  dangerDistance: 5
-  predictionHorizon: 2
-  turnSlowDuration: 2
-  turnSlowScale: 0.1
 --- !u!114 &1878556257
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -777,7 +760,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 103
+    VectorObservationSize: 99
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 0
@@ -795,6 +778,77 @@ MonoBehaviour:
   m_UseChildActuators: 1
   m_DeterministicInference: 0
   m_ObservableAttributeHandling: 0
+--- !u!114 &1878556259
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1878556250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0863ce3ee99ef447aaeb1aaee477825, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PolicyFactory: {fileID: 0}
+  agentParameters:
+    maxStep: 0
+  hasUpgradedFromAgentParameters: 1
+  MaxStep: 0
+  m_Reward: 0
+  m_GroupReward: 0
+  m_CumulativeReward: 0
+  m_RequestAction: 0
+  m_RequestDecision: 0
+  m_StepCount: 0
+  m_CompletedEpisodes: 0
+  m_EpisodeId: 0
+  m_Initialized: 0
+  m_GroupId: 0
+  normalSpeed: 4.6
+  aggressiveSpeed: 5.5
+  currentSpeed: 0
+  dangerDistance: 5
+  targetTransform: {fileID: 0}
+  envGenerator: {fileID: 0}
+  targetPosition: {x: 0, y: 0, z: 0}
+  isMoving: 0
+  lastMoveDirection: {x: 0, y: 0, z: 0}
+  episodeStartTime: 0
+  lastNextStepDist: 0
+  lastTargetPosition: {x: 0, y: 0, z: 0}
+  targetMoveDirection: {x: 0, y: 0}
+  lastTargetDir2D: {x: 0, y: 0}
+  turningSlowTimer: 0
+  turnSlowDuration: 2
+  turnSlowScale: 0.1
+  minEngageDistance: 1.5
+  maxEngageDistance: 6
+  distRewardScale: 0.01
+  farPenalty: -0.003
+  lastRawDist: 0
+--- !u!114 &1878556260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1878556250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba28dcff996d4c049b7310d457ae3f3b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentParameters:
+    maxStep: 0
+  hasUpgradedFromAgentParameters: 1
+  MaxStep: 0
+  normalSpeed: 4.6
+  aggressiveSpeed: 5.5
+  dangerDistance: 5
+  predictionHorizon: 2
+  turnSlowDuration: 2
+  turnSlowScale: 0.1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -35,8 +35,7 @@ results/**
 !results/*/
 
 # And keep these specific files
-!results/*/ChaserAgent.onnx
-!results/*/TargetAgent.onnx
+!results/*/*.onnx
 !results/*/configuration.yaml
 
 

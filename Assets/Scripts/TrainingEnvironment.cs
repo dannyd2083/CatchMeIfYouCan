@@ -4,7 +4,8 @@ using Unity.MLAgents;
 public enum TrainingMode
 {
     TrainTarget,
-    TrainChaser
+    TrainChaser,
+    TrainTargetUsingChaserAgent
 }
 
 public class TrainingEnvironment : MonoBehaviour
@@ -23,8 +24,12 @@ public class TrainingEnvironment : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private TargetAgent targetAgent;
+    [SerializeField] private TargetAgent_Ablation_NoDist targetAgentNoDist;
+    [SerializeField] private TargetAgent_Ablation_NoTurn targetAgentNoTurn;
     [SerializeField] private ChaserAI chaserAI;
     [SerializeField] private ChaserAgent chaserAgent;
+    [SerializeField] private ChaserAgent_Ablation_NoDist chaserAgentNoDist;
+    [SerializeField] private ChaserAgent_Ablation_NoBFS chaserAgentNoBFS;
     [SerializeField] private EnvironmentGenerator environmentGenerator;
 
     [Header("Catch Settings")]
@@ -33,18 +38,23 @@ public class TrainingEnvironment : MonoBehaviour
     private float episodeTimer = 0f;    
     private int timeRewardMultiplier = 1;
     private bool episodeEnded = false;
+    private Transform targetTransform;
 
     void Start()
     {
-        if (targetAgent == null)
+        GameObject target = GameObject.Find("Target");
+        if (target != null)
         {
-            GameObject target = GameObject.Find("Target");
-            if (target != null)
-            {
-                targetAgent = target.GetComponent<TargetAgent>();
-                if (targetAgent == null)
-                    targetAgent = target.AddComponent<TargetAgent>();
-            }
+            targetAgent = target.GetComponent<TargetAgent>();
+            targetAgentNoDist = target.GetComponent<TargetAgent_Ablation_NoDist>();
+            targetAgentNoTurn = target.GetComponent<TargetAgent_Ablation_NoTurn>();
+            
+            targetTransform = target.transform;
+            
+            string agentType = targetAgent != null ? "TargetAgent" :
+                              targetAgentNoDist != null ? "TargetAgent_Ablation_NoDist" :
+                              targetAgentNoTurn != null ? "TargetAgent_Ablation_NoTurn" : "None";
+            Debug.Log($"[TrainingEnvironment] Detected TargetAgent: {agentType}");
         }
 
         GameObject chaser = GameObject.Find("Chaser");
@@ -56,11 +66,19 @@ public class TrainingEnvironment : MonoBehaviour
                 if (chaserAI == null)
                     chaserAI = chaser.AddComponent<ChaserAI>();
             }
-            else
+            else if (trainingMode == TrainingMode.TrainChaser || 
+                     trainingMode == TrainingMode.TrainTargetUsingChaserAgent)
             {
                 chaserAgent = chaser.GetComponent<ChaserAgent>();
-                if (chaserAgent == null)
-                    chaserAgent = chaser.AddComponent<ChaserAgent>();
+                chaserAgentNoDist = chaser.GetComponent<ChaserAgent_Ablation_NoDist>();
+                chaserAgentNoBFS = chaser.GetComponent<ChaserAgent_Ablation_NoBFS>();
+                
+                string chaserType = chaserAgent != null ? "ChaserAgent" :
+                                   chaserAgentNoDist != null ? "ChaserAgent_Ablation_NoDist" :
+                                   chaserAgentNoBFS != null ? "ChaserAgent_Ablation_NoBFS" : "None";
+                Debug.Log($"[TrainingEnvironment] Detected ChaserAgent: {chaserType}");
+                
+                chaserAI = null;
             }
         }
 
@@ -73,7 +91,7 @@ public class TrainingEnvironment : MonoBehaviour
 
         if (environmentGenerator != null)
         {
-            int mapIndex = mapRng.Next(0, totalTrainingMaps);
+            int mapIndex = 0;//mapRng.Next(0, totalTrainingMaps);
             environmentGenerator.SwitchToMap(mapIndex);
         }
 
@@ -86,7 +104,8 @@ public class TrainingEnvironment : MonoBehaviour
 
         episodeTimer += Time.fixedDeltaTime;
 
-        if (trainingMode == TrainingMode.TrainTarget)
+        if (trainingMode == TrainingMode.TrainTarget || 
+            trainingMode == TrainingMode.TrainTargetUsingChaserAgent)
         {
             float timeThreshold = timeRewardInterval * timeRewardMultiplier;
             if (episodeTimer >= timeThreshold)
@@ -95,12 +114,21 @@ public class TrainingEnvironment : MonoBehaviour
 
                 if (targetAgent != null)
                     targetAgent.OnTimeReward(reward);
+                else if (targetAgentNoDist != null)
+                    targetAgentNoDist.OnTimeReward(reward);
+                else if (targetAgentNoTurn != null)
+                    targetAgentNoTurn.OnTimeReward(reward);
 
                 timeRewardMultiplier++;
             }
         }
 
         if (trainingMode == TrainingMode.TrainChaser)
+        {
+            CheckCatch();
+        }
+
+        if (trainingMode == TrainingMode.TrainTargetUsingChaserAgent)
         {
             CheckCatch();
         }
@@ -113,17 +141,28 @@ public class TrainingEnvironment : MonoBehaviour
 
     void CheckCatch()
     {
-        if (targetAgent == null || chaserAgent == null) return;
+        if (targetTransform == null) return;
+
+        Transform chaserTransform = GetActiveChaserTransform();
+        if (chaserTransform == null) return;
 
         float distance = Vector2.Distance(
-            chaserAgent.transform.position,
-            targetAgent.transform.position
+            chaserTransform.position,
+            targetTransform.position
         );
 
         if (distance <= catchRadius)
         {
             OnTargetCaught();
         }
+    }
+
+    private Transform GetActiveChaserTransform()
+    {
+        if (chaserAgent != null) return chaserAgent.transform;
+        if (chaserAgentNoDist != null) return chaserAgentNoDist.transform;
+        if (chaserAgentNoBFS != null) return chaserAgentNoBFS.transform;
+        return null;
     }
 
     public void OnTargetCaught()
@@ -133,13 +172,20 @@ public class TrainingEnvironment : MonoBehaviour
         episodeEnded = true;
 
         if (targetAgent != null)
-        {
             targetAgent.OnCaught();
-        }
+        else if (targetAgentNoDist != null)
+            targetAgentNoDist.OnCaught();
+        else if (targetAgentNoTurn != null)
+            targetAgentNoTurn.OnCaught();
 
-        if (trainingMode == TrainingMode.TrainChaser && chaserAgent != null)
+        if (trainingMode == TrainingMode.TrainChaser)
         {
-            chaserAgent.OnCatchTarget();
+            if (chaserAgent != null)
+                chaserAgent.OnCatchTarget();
+            else if (chaserAgentNoDist != null)
+                chaserAgentNoDist.OnCatchTarget();
+            else if (chaserAgentNoBFS != null)
+                chaserAgentNoBFS.OnCatchTarget();
         }
 
         Invoke(nameof(ResetEnvironment), 0.5f);
@@ -151,18 +197,33 @@ public class TrainingEnvironment : MonoBehaviour
 
         episodeEnded = true;
 
+        bool isTrainTarget = trainingMode == TrainingMode.TrainTarget ||
+                             trainingMode == TrainingMode.TrainTargetUsingChaserAgent;
+
         if (targetAgent != null)
         {
-            if (trainingMode == TrainingMode.TrainTarget)
-            {
-                targetAgent.AddReward(1.0f);
-            }
+            if (isTrainTarget) targetAgent.AddReward(1.0f);
             targetAgent.EndByTimeout();
         }
-
-        if (trainingMode == TrainingMode.TrainChaser && chaserAgent != null)
+        else if (targetAgentNoDist != null)
         {
-            chaserAgent.OnTimeout();
+            if (isTrainTarget) targetAgentNoDist.AddReward(1.0f);
+            targetAgentNoDist.EndByTimeout();
+        }
+        else if (targetAgentNoTurn != null)
+        {
+            if (isTrainTarget) targetAgentNoTurn.AddReward(1.0f);
+            targetAgentNoTurn.EndByTimeout();
+        }
+
+        if (trainingMode == TrainingMode.TrainChaser)
+        {
+            if (chaserAgent != null)
+                chaserAgent.OnTimeout();
+            else if (chaserAgentNoDist != null)
+                chaserAgentNoDist.OnTimeout();
+            else if (chaserAgentNoBFS != null)
+                chaserAgentNoBFS.OnTimeout();
         }
 
         Invoke(nameof(ResetEnvironment), 0.5f);
@@ -176,28 +237,37 @@ public class TrainingEnvironment : MonoBehaviour
 
         if (environmentGenerator != null)
         {
-            int mapIndex = mapRng.Next(0, totalTrainingMaps);
+            int mapIndex = 0;//mapRng.Next(0, totalTrainingMaps);
             environmentGenerator.SwitchToMap(mapIndex);
         }
 
         if (targetAgent != null)
             targetAgent.SyncAfterReset();
+        else if (targetAgentNoDist != null)
+            targetAgentNoDist.SyncAfterReset();
+        else if (targetAgentNoTurn != null)
+            targetAgentNoTurn.SyncAfterReset();
 
         if (trainingMode == TrainingMode.TrainTarget)
         {
             if (chaserAI != null)
                 chaserAI.ResetAI(chaserAI.transform.position);
         }
-        else
+        else if (trainingMode == TrainingMode.TrainChaser || 
+                 trainingMode == TrainingMode.TrainTargetUsingChaserAgent)
         {
             if (chaserAgent != null)
                 chaserAgent.SyncAfterReset();
+            else if (chaserAgentNoDist != null)
+                chaserAgentNoDist.SyncAfterReset();
+            else if (chaserAgentNoBFS != null)
+                chaserAgentNoBFS.SyncAfterReset();
         }
 
         if (environmentGenerator == null)
         {
-            if (targetAgent != null)
-                targetAgent.transform.position = new Vector3(19, 19, 0);
+            if (targetTransform != null)
+                targetTransform.position = new Vector3(19, 19, 0);
 
             if (trainingMode == TrainingMode.TrainTarget && chaserAI != null)
                 chaserAI.ResetAI(new Vector3(1, 1, 0));
@@ -206,7 +276,7 @@ public class TrainingEnvironment : MonoBehaviour
         }
     }
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
     void OnGUI()
     {
         GUI.color = Color.white;
@@ -216,8 +286,10 @@ public class TrainingEnvironment : MonoBehaviour
 
         float y = 10;
 
-        string modeStr = trainingMode == TrainingMode.TrainTarget ? 
-            "=== TRAIN TARGET ===" : "=== TRAIN CHASER ===";
+        string modeStr =
+            trainingMode == TrainingMode.TrainTarget ? "=== TRAIN TARGET ===" :
+            trainingMode == TrainingMode.TrainChaser ? "=== TRAIN CHASER ===" :
+            "=== TRAIN TARGET (RL CHASER) ===";
         GUI.Label(new Rect(10, y, 400, 30), modeStr, style);
         y += 30;
 
@@ -237,7 +309,8 @@ public class TrainingEnvironment : MonoBehaviour
             $"Remaining: {remaining:F1}s", style);
         y += 30;
 
-        if (trainingMode == TrainingMode.TrainTarget)
+        if (trainingMode == TrainingMode.TrainTarget ||
+            trainingMode == TrainingMode.TrainTargetUsingChaserAgent)
         {
             float nextReward = (timeRewardInterval * timeRewardMultiplier) - episodeTimer;
             if (nextReward > 0)
@@ -251,15 +324,15 @@ public class TrainingEnvironment : MonoBehaviour
         Transform chaserTransform = null;
         if (trainingMode == TrainingMode.TrainTarget && chaserAI != null)
             chaserTransform = chaserAI.transform;
-        else if (chaserAgent != null)
-            chaserTransform = chaserAgent.transform;
+        else
+            chaserTransform = GetActiveChaserTransform();
 
-        if (targetAgent != null && chaserTransform != null)
+        if (targetTransform != null && chaserTransform != null)
         {
-            float distance = Vector2.Distance(targetAgent.transform.position, chaserTransform.position);
+            float distance = Vector2.Distance(targetTransform.position, chaserTransform.position);
             GUI.Label(new Rect(10, y, 300, 30), 
                 $"Distance: {distance:F1}", style);
         }
     }
-    #endif
+#endif
 }

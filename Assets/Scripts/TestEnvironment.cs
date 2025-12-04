@@ -14,6 +14,7 @@ public class TestEnvironment : MonoBehaviour
     [SerializeField] private int[] testMapIndices = new int[] {50, 51, 52, 53, 54, 55, 56, 57, 58, 59};
     [SerializeField] private int episodesPerMap = 100;
     [SerializeField] private float maxEpisodeTime = 30f;
+    [SerializeField] private float catchRadius = 1f;
 
     [Header("Test Mode")]
     [SerializeField] private TestMode testMode = TestMode.TestTarget;
@@ -94,6 +95,12 @@ public class TestEnvironment : MonoBehaviour
                 float distance = Vector2.Distance(targetAgent.transform.position, chaserTf.position);
                 totalDistanceThisEpisode += distance;
                 distanceSampleCount++;
+
+                if (testMode == TestMode.TestChaser && distance <= catchRadius)
+                {
+                    OnTargetCaught();
+                    return;
+                }
             }
         }
 

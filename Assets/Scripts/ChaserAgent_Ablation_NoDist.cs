@@ -5,7 +5,7 @@ using Unity.MLAgents.Sensors;
 using System.Collections.Generic;
 using System;
 
-public class ChaserAgent : Agent
+public class ChaserAgent_Ablation_NoDist : Agent
 {
     [Header("Movement Settings")]
     [SerializeField] private float normalSpeed = 4.6f;
@@ -40,13 +40,6 @@ public class ChaserAgent : Agent
     private float turningSlowTimer = 0f;
     [SerializeField] private float turnSlowDuration = 2.0f;
     [SerializeField] private float turnSlowScale = 0.1f;
-
-    [Header("Distance Shaping")]
-    [SerializeField] private float minEngageDistance = 1.5f;
-    [SerializeField] private float maxEngageDistance = 6f;
-    [SerializeField] private float distRewardScale = 0.01f;
-    [SerializeField] private float farPenalty = -0.003f;
-    private float lastRawDist = 0f;
 
 
     public override void Initialize()
@@ -84,8 +77,6 @@ public class ChaserAgent : Agent
             lastLongInterceptDist = lastShortInterceptDist;
 
             lastTargetDir2D = Vector2.zero;
-
-            lastRawDist = Vector2.Distance(transform.position, targetTransform.position);
         }
 
         turningSlowTimer = 0f;
@@ -327,37 +318,6 @@ public class ChaserAgent : Agent
             lastMoveDirection = dir;
         }
 
-        if (targetTransform != null)
-        {
-            float dist = Vector2.Distance(transform.position, targetTransform.position);
-            float prevDist = lastRawDist;
-            float deltaDist = prevDist - dist;
-
-            if (prevDist > maxEngageDistance)
-            {
-                AddReward(farPenalty);
-
-                if (deltaDist > 0f)
-                {
-                    float shaped = Mathf.Clamp(deltaDist, -1f, 1f);
-                    AddReward(shaped * distRewardScale * 3f);
-                }
-            }
-            else if (prevDist > minEngageDistance && prevDist <= maxEngageDistance)
-            {
-                if (deltaDist > 0f)
-                {
-                    float shaped = Mathf.Clamp(deltaDist, -1f, 1f);
-                    AddReward(shaped * distRewardScale * 0.5f);
-                }
-            }
-
-            lastRawDist = dist;
-
-            if (dist < 1.8f)
-                AddReward(0.2f);
-        }
-
         Vector2Int me = ToCell(transform.position);
         Vector2Int bfsNext = PredictTargetNextStep();
 
@@ -542,3 +502,4 @@ public class ChaserAgent : Agent
         }
     }
 }
+

@@ -2,10 +2,9 @@ using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
-using System.Collections.Generic;
 using System;
 
-public class ChaserAgent : Agent
+public class ChaserAgent_Ablation_NoBFS : Agent
 {
     [Header("Movement Settings")]
     [SerializeField] private float normalSpeed = 4.6f;
@@ -31,11 +30,7 @@ public class ChaserAgent : Agent
     private Vector2 smoothedTargetDir2D = Vector2.zero;
     private float episodeStartTime = 0f;
 
-    private float lastNextStepDist = 0f;
     private Vector2 lastTargetDir2D = Vector2.zero;
-
-    private float lastShortInterceptDist = 0f;
-    private float lastLongInterceptDist = 0f;
 
     private float turningSlowTimer = 0f;
     [SerializeField] private float turnSlowDuration = 2.0f;
@@ -75,16 +70,7 @@ public class ChaserAgent : Agent
             lastTargetPosition = targetTransform.position;
             targetMoveDirection = Vector2.zero;
             smoothedTargetDir2D = Vector2.zero;
-
-            Vector2Int my = ToCell(transform.position);
-            Vector2Int tar = ToCell(targetTransform.position);
-            lastNextStepDist = CalculateBfsDistance(my, tar);
-
-            lastShortInterceptDist = Vector2.Distance(transform.position, targetTransform.position);
-            lastLongInterceptDist = lastShortInterceptDist;
-
             lastTargetDir2D = Vector2.zero;
-
             lastRawDist = Vector2.Distance(transform.position, targetTransform.position);
         }
 
@@ -174,88 +160,6 @@ public class ChaserAgent : Agent
     }
 
 
-    int CalculateBfsDistance(Vector2Int start, Vector2Int goal)
-    {
-        int[,] maze = envGenerator.GetMaze();
-        if (start == goal) return 0;
-        if (!InMaze(start.x, start.y, maze) || !InMaze(goal.x, goal.y, maze)) return 999;
-        if (maze[start.x, start.y] == 1 || maze[goal.x, goal.y] == 1) return 999;
-
-        Queue<Vector2Int> q = new Queue<Vector2Int>();
-        Dictionary<Vector2Int, int> dist = new Dictionary<Vector2Int, int>();
-
-        q.Enqueue(start);
-        dist[start] = 0;
-
-        Vector2Int[] dirs = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
-
-        while (q.Count > 0)
-        {
-            Vector2Int cur = q.Dequeue();
-            int cd = dist[cur];
-
-            foreach (var d in dirs)
-            {
-                Vector2Int nxt = cur + d;
-                if (!InMaze(nxt.x, nxt.y, maze)) continue;
-                if (maze[nxt.x, nxt.y] == 1) continue;
-                if (dist.ContainsKey(nxt)) continue;
-
-                dist[nxt] = cd + 1;
-                if (nxt == goal) return cd + 1;
-                q.Enqueue(nxt);
-            }
-        }
-        return 999;
-    }
-
-
-    Vector2Int PredictTargetNextStep()
-    {
-        int[,] maze = envGenerator.GetMaze();
-        Vector2Int tar = ToCell(targetTransform.position);
-        Vector2Int cha = ToCell(transform.position);
-
-        Queue<Vector2Int> q = new Queue<Vector2Int>();
-        Dictionary<Vector2Int, Vector2Int> parent = new Dictionary<Vector2Int, Vector2Int>();
-
-        q.Enqueue(tar);
-        parent[tar] = tar;
-
-        Vector2Int[] dirs = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
-
-        bool found = false;
-
-        while (q.Count > 0)
-        {
-            Vector2Int cur = q.Dequeue();
-            if (cur == cha)
-            {
-                found = true;
-                break;
-            }
-
-            foreach (var d in dirs)
-            {
-                Vector2Int nxt = cur + d;
-                if (!parent.ContainsKey(nxt) && InMaze(nxt.x, nxt.y, maze) && maze[nxt.x, nxt.y] == 0)
-                {
-                    parent[nxt] = cur;
-                    q.Enqueue(nxt);
-                }
-            }
-        }
-
-        if (!found) return tar;
-
-        Vector2Int p = cha;
-        while (parent[p] != tar)
-            p = parent[p];
-
-        return p;
-    }
-
-
     public override void CollectObservations(VectorSensor sensor)
     {
         int[,] maze = envGenerator.GetMaze();
@@ -274,20 +178,15 @@ public class ChaserAgent : Agent
         sensor.AddObservation(targetMoveDirection);
         sensor.AddObservation(smoothedTargetDir2D);
 
-        Vector2Int nextStep = PredictTargetNextStep();
-        Vector2Int me = ToCell(transform.position);
-
-        int dx = nextStep.x - me.x;
-        int dy = nextStep.y - me.y;
-
-        sensor.AddObservation(dy > 0 ? 1f : 0f);
-        sensor.AddObservation(dy < 0 ? 1f : 0f);
-        sensor.AddObservation(dx < 0 ? 1f : 0f);
-        sensor.AddObservation(dx > 0 ? 1f : 0f);
+        sensor.AddObservation(toTarget.y > 0.5f ? 1f : 0f);
+        sensor.AddObservation(toTarget.y < -0.5f ? 1f : 0f);
+        sensor.AddObservation(toTarget.x < -0.5f ? 1f : 0f);
+        sensor.AddObservation(toTarget.x > 0.5f ? 1f : 0f);
 
         Vector2Int tar = ToCell(targetTransform.position);
         sensor.AddObservation(CountLocalDegree(tar.x, tar.y, maze) / 4f);
 
+        Vector2Int me = ToCell(transform.position);
         int px = me.x;
         int py = me.y;
         int vr = 4;
@@ -357,40 +256,6 @@ public class ChaserAgent : Agent
             if (dist < 1.8f)
                 AddReward(0.2f);
         }
-
-        Vector2Int me = ToCell(transform.position);
-        Vector2Int bfsNext = PredictTargetNextStep();
-
-        Vector3 futureTrendPos = targetTransform.position;
-        if (smoothedTargetDir2D.sqrMagnitude > 0.001f)
-            futureTrendPos += (Vector3)(smoothedTargetDir2D.normalized * predictionHorizon);
-
-        Vector2Int trendCell = ToCell(futureTrendPos);
-
-        Vector2Int interceptTarget = bfsNext;
-
-        float distU = Vector2.Distance(transform.position, targetTransform.position);
-
-        if (distU <= 8f)
-        {
-            if (smoothedTargetDir2D.magnitude > 0.2f)
-            {
-                int distBfs   = CalculateBfsDistance(me, bfsNext);
-                int distTrend = CalculateBfsDistance(me, trendCell);
-
-                if (distTrend + 1 < distBfs)
-                    interceptTarget = trendCell;
-            }
-        }
-
-        float nowDist = CalculateBfsDistance(me, interceptTarget);
-        float delta   = lastNextStepDist - nowDist;
-
-        AddReward(0.08f * (float)System.Math.Tanh(delta));
-        lastNextStepDist = nowDist;
-
-        if (nowDist == 0) AddReward(0.3f);
-
 
         float turnDot2 = Vector2.Dot(lastTargetDir2D, targetMoveDirection);
         if (turnDot2 < 0.5f) AddReward(0.02f);

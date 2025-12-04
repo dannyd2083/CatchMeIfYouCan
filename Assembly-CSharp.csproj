@@ -65,9 +65,12 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\EnvironmentGenerator.cs" />
     <Compile Include="Assets\Scripts\TrainingEnvironment.cs" />
-    <Compile Include="Assets\Scripts\MLAgentsTestEnvironment.cs" />
+    <Compile Include="Assets\Scripts\TargetAgent_Ablation_NoTurn.cs" />
+    <Compile Include="Assets\Scripts\ChaserAgent_Ablation_NoDist.cs" />
+    <Compile Include="Assets\Scripts\TargetAgent_Ablation_NoDist.cs" />
     <Compile Include="Assets\Scripts\ChaserAI.cs" />
     <Compile Include="Assets\Scripts\TestEnvironment.cs" />
+    <Compile Include="Assets\Scripts\ChaserAgent_Ablation_NoBFS.cs" />
     <Compile Include="Assets\Scripts\TargetAgent.cs" />
     <Compile Include="Assets\Scripts\Chaseragent.cs" />
   </ItemGroup>
