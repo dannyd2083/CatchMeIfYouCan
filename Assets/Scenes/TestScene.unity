@@ -499,15 +499,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e04eafb019b1f504fb818921d48c02bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  testMapIndices: 32000000330000003400000035000000360000003700000038000000390000003a0000003b000000
+  testMapIndices: 00000000
   episodesPerMap: 100
   maxEpisodeTime: 30
   catchRadius: 1
-  testMode: 1
+  testMode: 0
   targetAgent: {fileID: 822426527}
-  chaserAI: {fileID: 0}
-  chaserAgent: {fileID: 1878556257}
-  environmentGenerator: {fileID: 1360779477}
+  chaserAI: {fileID: 1878556255}
+  chaserAgent: {fileID: 0}
+  environmentGenerator: {fileID: 0}
 --- !u!1 &1360779475
 GameObject:
   m_ObjectHideFlags: 0
@@ -729,7 +729,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1878556250}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4669bfda7b7d9c5498885f5537993996, type: 3}
   m_Name: 
@@ -765,7 +765,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1878556250}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 62b54edba9d9aee4db8ddf214a952f79, type: 3}
   m_Name: 
@@ -806,9 +806,9 @@ MonoBehaviour:
     VectorActionDescriptions: []
     VectorActionSpaceType: 0
     hasUpgradedBrainParametersWithActionSpec: 1
-  m_Model: {fileID: 5022602860645237092, guid: 1d3236095c16dff4599d3fbc5ffd654c, type: 3}
+  m_Model: {fileID: 0}
   m_InferenceDevice: 0
-  m_BehaviorType: 2
+  m_BehaviorType: 0
   m_BehaviorName: ChaserAgent
   TeamId: 0
   m_UseChildSensors: 1

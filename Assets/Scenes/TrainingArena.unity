@@ -477,7 +477,7 @@ MonoBehaviour:
   targetAgentNoTurn: {fileID: 0}
   chaserAI: {fileID: 0}
   chaserAgent: {fileID: 0}
-  chaserAgentNoDist: {fileID: 1878556260}
+  chaserAgentNoDist: {fileID: 1878556259}
   chaserAgentNoBFS: {fileID: 0}
   environmentGenerator: {fileID: 1360779477}
   catchRadius: 1
@@ -564,7 +564,6 @@ GameObject:
   - component: {fileID: 1878556258}
   - component: {fileID: 1878556257}
   - component: {fileID: 1878556259}
-  - component: {fileID: 1878556260}
   m_Layer: 0
   m_Name: Chaser
   m_TagString: Chaser
@@ -779,55 +778,6 @@ MonoBehaviour:
   m_DeterministicInference: 0
   m_ObservableAttributeHandling: 0
 --- !u!114 &1878556259
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1878556250}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0863ce3ee99ef447aaeb1aaee477825, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_PolicyFactory: {fileID: 0}
-  agentParameters:
-    maxStep: 0
-  hasUpgradedFromAgentParameters: 1
-  MaxStep: 0
-  m_Reward: 0
-  m_GroupReward: 0
-  m_CumulativeReward: 0
-  m_RequestAction: 0
-  m_RequestDecision: 0
-  m_StepCount: 0
-  m_CompletedEpisodes: 0
-  m_EpisodeId: 0
-  m_Initialized: 0
-  m_GroupId: 0
-  normalSpeed: 4.6
-  aggressiveSpeed: 5.5
-  currentSpeed: 0
-  dangerDistance: 5
-  targetTransform: {fileID: 0}
-  envGenerator: {fileID: 0}
-  targetPosition: {x: 0, y: 0, z: 0}
-  isMoving: 0
-  lastMoveDirection: {x: 0, y: 0, z: 0}
-  episodeStartTime: 0
-  lastNextStepDist: 0
-  lastTargetPosition: {x: 0, y: 0, z: 0}
-  targetMoveDirection: {x: 0, y: 0}
-  lastTargetDir2D: {x: 0, y: 0}
-  turningSlowTimer: 0
-  turnSlowDuration: 2
-  turnSlowScale: 0.1
-  minEngageDistance: 1.5
-  maxEngageDistance: 6
-  distRewardScale: 0.01
-  farPenalty: -0.003
-  lastRawDist: 0
---- !u!114 &1878556260
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

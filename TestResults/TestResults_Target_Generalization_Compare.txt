@@ -1,0 +1,70 @@
+========== TEST RESULTS ==========
+Test Date: 12/5/2025 4:33:25 AM
+Episodes per map: 100
+Test maps: 50, 51, 52, 53, 54, 55, 56, 57, 58, 59
+
+Map 50:
+  Timeout: 22/100 (22.00%)
+  Caught: 78/100 (78.00%)
+  Avg Survival: 16.72s
+  Avg Distance: 6.14
+
+Map 51:
+  Timeout: 40/100 (40.00%)
+  Caught: 60/100 (60.00%)
+  Avg Survival: 19.01s
+  Avg Distance: 6.39
+
+Map 52:
+  Timeout: 16/100 (16.00%)
+  Caught: 84/100 (84.00%)
+  Avg Survival: 14.79s
+  Avg Distance: 6.73
+
+Map 53:
+  Timeout: 23/100 (23.00%)
+  Caught: 77/100 (77.00%)
+  Avg Survival: 17.53s
+  Avg Distance: 6.78
+
+Map 54:
+  Timeout: 16/100 (16.00%)
+  Caught: 84/100 (84.00%)
+  Avg Survival: 14.56s
+  Avg Distance: 6.60
+
+Map 55:
+  Timeout: 14/100 (14.00%)
+  Caught: 86/100 (86.00%)
+  Avg Survival: 14.74s
+  Avg Distance: 6.56
+
+Map 56:
+  Timeout: 25/100 (25.00%)
+  Caught: 75/100 (75.00%)
+  Avg Survival: 16.63s
+  Avg Distance: 6.32
+
+Map 57:
+  Timeout: 26/100 (26.00%)
+  Caught: 74/100 (74.00%)
+  Avg Survival: 20.05s
+  Avg Distance: 5.87
+
+Map 58:
+  Timeout: 30/100 (30.00%)
+  Caught: 70/100 (70.00%)
+  Avg Survival: 16.96s
+  Avg Distance: 6.42
+
+Map 59:
+  Timeout: 11/100 (11.00%)
+  Caught: 89/100 (89.00%)
+  Avg Survival: 14.67s
+  Avg Distance: 7.39
+
+========== OVERALL ==========
+Total Episodes: 1000
+Overall Timeout Rate: 22.30%
+Overall Avg Survival: 16.56s
+Overall Avg Distance: 6.52
