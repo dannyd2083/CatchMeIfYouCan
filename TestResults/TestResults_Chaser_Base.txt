@@ -1,0 +1,16 @@
+========== TEST RESULTS ==========
+Test Date: 12/5/2025 1:02:13 AM
+Episodes per map: 100
+Test maps: 0
+
+Map 0:
+  Timeout: 23/100 (23.00%)
+  Caught: 77/100 (77.00%)
+  Avg Survival: 17.34s
+  Avg Distance: 7.16
+
+========== OVERALL ==========
+Total Episodes: 100
+Overall Timeout Rate: 23.00%
+Overall Avg Survival: 17.34s
+Overall Avg Distance: 7.16
